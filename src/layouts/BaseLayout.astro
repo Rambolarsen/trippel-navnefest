@@ -1,10 +1,9 @@
 ---
 type Props = {
   title: string;
-  description?: string;
 };
 
-const { title, description } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <!doctype html>
@@ -13,7 +12,6 @@ const { title, description } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    {description && <meta name="description" content={description} />}
     <title>{title}</title>
   </head>
   <body>
