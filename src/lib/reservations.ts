@@ -128,6 +128,18 @@ export async function deleteMyReservation(
   return result.meta.changes > 0;
 }
 
+// Admin-nullstilling: fjerner alle reservasjoner på en gave (MVP.md §12).
+export async function deleteAllReservationsForGift(
+  db: D1Database,
+  giftId: string,
+): Promise<number> {
+  const result = await db
+    .prepare("DELETE FROM reservations WHERE gift_id = ?")
+    .bind(giftId)
+    .run();
+  return result.meta.changes;
+}
+
 export async function getGiftReservationStatus(
   db: D1Database,
   giftId: string,

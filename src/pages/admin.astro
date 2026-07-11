@@ -1,0 +1,157 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { gifts } from "../data/gifts";
+import { hasValidAdminSession } from "../lib/auth";
+import { getDb } from "../lib/database";
+import { countReservationsByGift } from "../lib/reservations";
+
+const isAdmin = await hasValidAdminSession(Astro.cookies);
+const showError = Astro.url.searchParams.has("feil");
+
+// Kun tall vises – aldri hvem som har reservert (MVP.md §6).
+let rows: { id: string; title: string; mode: string; count: number }[] = [];
+if (isAdmin) {
+  const counts = await countReservationsByGift(getDb());
+  rows = gifts.map((gift) => ({
+    id: gift.id,
+    title: gift.title,
+    mode: gift.mode === "group" ? "Spleis" : "Enkeltgave",
+    count: counts.get(gift.id) ?? 0,
+  }));
+}
+---
+
+<BaseLayout title="Admin – navnefest">
+  <main>
+    <h1>Admin</h1>
+    {
+      !isAdmin ? (
+        <>
+          <p class="muted">Skriv inn admin-passordet for å administrere ønskelisten.</p>
+          <form method="post" action="/api/admin/login">
+            <label for="passphrase">Admin-passord</label>
+            <input
+              type="password"
+              id="passphrase"
+              name="passphrase"
+              required
+              autocomplete="current-password"
+            />
+            {showError && (
+              <p class="error" role="alert">
+                Det passordet stemte ikke. Prøv gjerne igjen.
+              </p>
+            )}
+            <button type="submit">Logg inn</button>
+          </form>
+        </>
+      ) : (
+        <>
+          <p class="muted">
+            Antall reservasjoner og spleiseinteresser per gave. Hvem som har
+            reservert, lagres ikke og kan ikke vises.
+          </p>
+          <ul class="admin-list" role="list">
+            {rows.map((row) => (
+              <li class="admin-row">
+                <div>
+                  <strong>{row.title}</strong>
+                  <p class="muted admin-meta">
+                    {row.mode} ·{" "}
+                    <span data-count-for={row.id}>
+                      {row.count === 1
+                        ? "1 reservasjon"
+                        : `${row.count} reservasjoner`}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  data-reset-gift={row.id}
+                  data-gift-title={row.title}
+                  disabled={row.count === 0}
+                >
+                  Nullstill
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-block-start: 1rem;
+  }
+
+  input {
+    max-width: 22rem;
+  }
+
+  .error {
+    margin: 0;
+    color: #9b2c13;
+    font-weight: 600;
+  }
+
+  .admin-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .admin-meta {
+    margin: 0.125rem 0 0;
+    font-size: 0.9rem;
+  }
+</style>
+
+<script>
+  // Nullstilling via DELETE-endepunktet (MVP.md §12), med bekreftelse.
+  document.addEventListener("click", async (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-reset-gift]",
+    );
+    if (!button) return;
+
+    const giftId = button.dataset.resetGift!;
+    const title = button.dataset.giftTitle ?? giftId;
+    if (!confirm(`Fjerne alle reservasjoner på «${title}»?`)) return;
+
+    button.disabled = true;
+    try {
+      const response = await fetch(`/api/admin/gifts/${giftId}/reservations`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error(String(response.status));
+      const counter = document.querySelector(`[data-count-for="${giftId}"]`);
+      if (counter) counter.textContent = "0 reservasjoner";
+    } catch {
+      alert("Nullstillingen feilet. Prøv igjen.");
+      button.disabled = false;
+    }
+  });
+</script>
