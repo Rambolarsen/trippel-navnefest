@@ -31,6 +31,8 @@ const { title } = Astro.props;
     --color-primary: #b3552b;
     --color-primary-strong: #96431f;
     --color-accent: #2f6f62;
+    --color-tag-bg: rgba(47, 111, 98, 0.12);
+    --color-tag-text: #235448;
     --color-border: #e7dccd;
     --color-focus: #1f5d51;
 
@@ -50,6 +52,12 @@ const { title } = Astro.props;
 
   html {
     -webkit-text-size-adjust: 100%;
+  }
+
+  /* hidden-attributtet må vinne over komponenters egne display-regler
+     (UA-stilarkets [hidden] tapes ellers mot f.eks. display: flex) */
+  [hidden] {
+    display: none !important;
   }
 
   body {
