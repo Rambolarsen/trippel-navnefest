@@ -6,7 +6,13 @@ import { getDb } from "../lib/database";
 import { countReservationsByGift } from "../lib/reservations";
 
 const isAdmin = await hasValidAdminSession(Astro.cookies);
-const showError = Astro.url.searchParams.has("feil");
+const errorKind = Astro.url.searchParams.get("feil");
+const errorMessage =
+  errorKind === "mange"
+    ? "For mange forsøk. Vent et minutt og prøv igjen."
+    : errorKind
+      ? "Det passordet stemte ikke. Prøv gjerne igjen."
+      : null;
 
 // Kun tall vises – aldri hvem som har reservert (MVP.md §6).
 let rows: { id: string; title: string; mode: string; count: number }[] = [];
@@ -37,9 +43,9 @@ if (isAdmin) {
               required
               autocomplete="current-password"
             />
-            {showError && (
+            {errorMessage && (
               <p class="error" role="alert">
-                Det passordet stemte ikke. Prøv gjerne igjen.
+                {errorMessage}
               </p>
             )}
             <button type="submit">Logg inn</button>

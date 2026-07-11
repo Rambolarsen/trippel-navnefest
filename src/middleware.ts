@@ -10,8 +10,22 @@ import { hasValidAdminSession, hasValidGuestSession } from "./lib/auth";
 const PUBLIC_PATHS = new Set(["/", "/api/login"]);
 const ADMIN_FLOW_PATHS = new Set(["/admin", "/api/admin/login"]);
 
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname;
+
+  // Streng Origin-kontroll på alle muterende kall (MVP.md §15).
+  // Utfyller Astros innebygde checkOrigin, som bare dekker
+  // skjema-innholdstyper.
+  if (MUTATING_METHODS.has(context.request.method)) {
+    const origin = context.request.headers.get("origin");
+    if (origin && origin !== context.url.origin) {
+      const forbidden = Response.json({ error: "Ugyldig origin" }, { status: 403 });
+      forbidden.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return forbidden;
+    }
+  }
 
   let response: Response;
   if (path.startsWith("/api/admin/") && !ADMIN_FLOW_PATHS.has(path)) {
