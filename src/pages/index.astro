@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const showError = Astro.url.searchParams.has("feil");
 ---
 
 <BaseLayout title="Navnefest – ønskeliste">
@@ -8,6 +10,45 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <p class="muted">
       Skriv inn passordet fra invitasjonen for å åpne ønskelisten.
     </p>
-    <!-- Innloggingsskjema kommer i fase 2 (issue #4) -->
+
+    <form method="post" action="/api/login">
+      <label for="passphrase">Passord</label>
+      <input
+        type="password"
+        id="passphrase"
+        name="passphrase"
+        required
+        autocomplete="current-password"
+        autofocus={showError}
+      />
+      {
+        showError && (
+          <p class="error" role="alert">
+            Det passordet stemte ikke. Prøv gjerne igjen.
+          </p>
+        )
+      }
+      <button type="submit">Åpne ønskelisten</button>
+    </form>
   </main>
 </BaseLayout>
+
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-block-start: 1rem;
+  }
+
+  input {
+    max-width: 22rem;
+  }
+
+  .error {
+    margin: 0;
+    color: #9b2c13;
+    font-weight: 600;
+  }
+</style>
