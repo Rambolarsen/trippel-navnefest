@@ -1,0 +1,14 @@
+# avhengigheter og byggeartefakter
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# hemmeligheter – skal aldri i repoet (MVP.md §14)
+.env
+.env.*
+!.env.example
+
+# diverse
+.DS_Store
+*.log
