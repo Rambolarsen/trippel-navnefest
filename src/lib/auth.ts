@@ -1,5 +1,12 @@
 import type { AstroCookies } from "astro";
 import { env } from "cloudflare:workers";
+import {
+  constantTimeStringEqual,
+  encodeText,
+  hmacSign,
+  timingSafeEqual,
+  toBase64Url,
+} from "./crypto";
 
 // Gjestesesjon: signert, tidsbegrenset token i en HttpOnly-cookie
 // (MVP.md §13). Stateless – ingen sesjonslagring på serveren.
@@ -8,52 +15,12 @@ import { env } from "cloudflare:workers";
 export const SESSION_COOKIE = "session";
 const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 
-const encoder = new TextEncoder();
-
 function getSecret(name: "GUEST_PASSPHRASE" | "ADMIN_PASSPHRASE" | "SESSION_SECRET"): string {
   const value = env[name];
   if (!value) {
     throw new Error(`Miljøvariabelen ${name} er ikke satt`);
   }
   return value;
-}
-
-async function sha256(message: string): Promise<Uint8Array> {
-  return new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(message)));
-}
-
-async function hmacSign(secret: string, message: string): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  return new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(message)));
-}
-
-function toBase64Url(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replace(/=+$/, "");
-}
-
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a[i]! ^ b[i]!;
-  }
-  return diff === 0;
-}
-
-// Sammenligner via SHA-256-digester slik at sammenligningen tar like
-// lang tid uavhengig av inputlengde og -innhold (MVP.md §15).
-async function constantTimeStringEqual(a: string, b: string): Promise<boolean> {
-  const [da, db] = await Promise.all([sha256(a), sha256(b)]);
-  return timingSafeEqual(da, db);
 }
 
 export async function verifyGuestPassphrase(input: string): Promise<boolean> {
@@ -88,7 +55,7 @@ export async function hasValidGuestSession(cookies: AstroCookies): Promise<boole
   if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return false;
 
   const expected = toBase64Url(await hmacSign(getSecret("SESSION_SECRET"), payload));
-  return timingSafeEqual(encoder.encode(signature), encoder.encode(expected));
+  return timingSafeEqual(encodeText(signature), encodeText(expected));
 }
 
 export function clearGuestSession(cookies: AstroCookies): void {

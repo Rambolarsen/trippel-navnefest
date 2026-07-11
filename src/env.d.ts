@@ -6,5 +6,6 @@ declare module "cloudflare:workers" {
     ADMIN_PASSPHRASE?: string;
     SESSION_SECRET?: string;
     RESERVATION_SECRET?: string;
+    DB?: import("@cloudflare/workers-types").D1Database;
   };
 }

@@ -3,5 +3,16 @@
   "name": "trippel-navnefest",
   "compatibility_date": "2026-04-15",
   // nodejs_compat kreves for at Astro-runtimen skal fungere i workerd
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "trippel-navnefest",
+      // Plassholder: erstattes med ekte ID fra `wrangler d1 create
+      // trippel-navnefest` før første deploy (issue #11). Lokal utvikling
+      // bruker en lokal SQLite uansett.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
 }
