@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GiftCard from "../components/GiftCard.astro";
+import GiftFilters from "../components/GiftFilters.tsx";
+import { gifts } from "../data/gifts";
+
+// Sorter høyt prioriterte gaver først
+const sortedGifts = [...gifts].sort(
+  (a, b) => (b.priority === "high" ? 1 : 0) - (a.priority === "high" ? 1 : 0),
+);
+---
+
+<BaseLayout title="Ønskeliste – navnefest for Edvin, Jonas og Sofie">
+  <main>
+    <h1>Ønskeliste</h1>
+    <p class="muted">
+      Flere har spurt hva barna ønsker seg til navnefesten. Gaver er selvfølgelig
+      ikke nødvendig, men her er noen forslag dersom du ønsker å gi noe.
+    </p>
+
+    <GiftFilters client:load />
+
+    <div class="gift-list">
+      {sortedGifts.map((gift) => <GiftCard gift={gift} />)}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .gift-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-block-start: 1rem;
+  }
+
+  @media (min-width: 40rem) {
+    .gift-list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Stiler for GiftFilters-øya (React-komponenter kan ikke bruke
+     Astro-scoped CSS, så de deles her via layoutens tokens). */
+  .gift-filters {
+    margin-block-start: 0.5rem;
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    font-weight: 500;
+  }
+
+  .filter-btn:hover {
+    background: rgba(61, 46, 29, 0.06);
+  }
+
+  .filter-btn.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .filter-btn.is-active:hover {
+    background: var(--color-primary-strong);
+  }
+
+  .filter-status {
+    min-height: 1.5rem;
+    margin-block: 0.5rem 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+</style>
