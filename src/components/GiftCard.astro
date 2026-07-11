@@ -1,5 +1,6 @@
 ---
 import type { Gift } from "../data/gifts";
+import GiftReservationButton from "./GiftReservationButton.tsx";
 import Tag from "./Tag.astro";
 
 type Props = {
@@ -7,12 +8,6 @@ type Props = {
 };
 
 const { gift } = Astro.props;
-
-// Reservasjonsstatus kobles til API-et i fase 3-4 (issue #5-#7).
-// Inntil da vises alle gaver som ledige.
-const statusText = "Ledig";
-const buttonLabel =
-  gift.mode === "group" ? "Jeg vil være med og spleise" : "Jeg tenker å kjøpe denne";
 ---
 
 <article
@@ -41,12 +36,7 @@ const buttonLabel =
       ))}
     </ul>
     {gift.priceLabel && <p class="gift-price muted">{gift.priceLabel}</p>}
-    <p class="gift-status" data-status-text>
-      {statusText}
-    </p>
-    <button type="button" disabled>
-      {buttonLabel}
-    </button>
+    <GiftReservationButton client:load giftId={gift.id} mode={gift.mode} />
   </div>
 </article>
 
@@ -105,9 +95,25 @@ const buttonLabel =
     margin: 0.25rem 0 0;
     font-size: 0.9rem;
   }
+</style>
 
-  .gift-status {
+<style is:global>
+  /* Stiler for GiftReservationButton-øya (React-elementer får ikke
+     Astro-scoped attributter, så disse må være globale). */
+  .reservation {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-block-start: 0.25rem;
+  }
+
+  .reservation-status p {
     margin: 0.25rem 0;
     font-weight: 600;
+  }
+
+  .reservation-error {
+    color: #9b2c13;
   }
 </style>
