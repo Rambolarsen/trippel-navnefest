@@ -8,6 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "vitest run",
+    "test:e2e": "node test/e2e.mjs",
     "db:migrate": "wrangler d1 migrations apply trippel-navnefest --local",
     "db:migrate:remote": "wrangler d1 migrations apply trippel-navnefest --remote"
   },
@@ -22,10 +24,12 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@cloudflare/vitest-pool-workers": "^0.18.4",
     "@cloudflare/workers-types": "^5.20260711.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.10",
     "wrangler": "^4.110.0"
   }
 }
