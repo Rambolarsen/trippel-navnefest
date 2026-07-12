@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "trippel-navnefest",
   "compatibility_date": "2026-04-15",
+  "workers_dev": true,
   // nodejs_compat kreves for at Astro-runtimen skal fungere i workerd
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
