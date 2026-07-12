@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import GiftCard from "../components/GiftCard.astro";
 import GiftFilters from "../components/GiftFilters.tsx";
+import NameForm from "../components/NameForm.tsx";
 import { gifts } from "../data/gifts";
 
 // Sorter høyt prioriterte gaver først
@@ -17,6 +18,9 @@ const sortedGifts = [...gifts].sort(
       Flere har spurt hva barna ønsker seg til navnefesten. Gaver er selvfølgelig
       ikke nødvendig, men her er noen forslag dersom du ønsker å gi noe.
     </p>
+
+    {/* client:only: navnet leses fra localStorage og finnes ikke ved SSR */}
+    <NameForm client:only="react" />
 
     <GiftFilters client:load />
 
@@ -80,6 +84,38 @@ const sortedGifts = [...gifts].sort(
     min-height: 1.5rem;
     margin-block: 0.5rem 0;
     color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Stiler for NameForm-øya (MVP.md §8) */
+  .name-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-block: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .name-form label {
+    font-weight: 600;
+  }
+
+  .name-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .name-form-row input {
+    flex: 1 1 12rem;
+    max-width: 22rem;
+  }
+
+  .name-form-status {
+    margin: 0;
     font-size: 0.9rem;
   }
 </style>
