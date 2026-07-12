@@ -14,3 +14,4 @@ dist/
 # diverse
 .DS_Store
 *.log
+.serena/

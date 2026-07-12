@@ -11,7 +11,7 @@
       // Plassholder: erstattes med ekte ID fra `wrangler d1 create
       // trippel-navnefest` før første deploy (issue #11). Lokal utvikling
       // bruker en lokal SQLite uansett.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "fe5cbc6d-e835-4cd4-a5cf-26fb03fd2c47",
       "migrations_dir": "migrations"
     }
   ]
