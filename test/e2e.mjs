@@ -3,7 +3,7 @@
 // Starter sin egen server på port 4322 og rydder opp etter seg.
 // Kjør med: npm run test:e2e
 
-import { execSync } from "node:child_process";
+import { execSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const PORT = 4322;
@@ -158,12 +158,27 @@ async function run() {
   check("sesjonen er borte etterpå", res.status === 302, `(${res.status})`);
 }
 
+// Hele kjøringen får maks 3 minutter – uten TTY (CI) kan prosesser
+// ellers bli hengende og blokkere jobben til runnerens timeout.
+const watchdog = setTimeout(() => {
+  console.error("Tidsavbrudd: integrasjonstestene ble ikke ferdige på 3 minutter");
+  process.exit(1);
+}, 180_000);
+watchdog.unref();
+
 console.log(`Starter dev-server på port ${PORT} ...`);
-execSync(`npx astro dev --port ${PORT}`, { stdio: "ignore" });
+// spawn i stedet for execSync: `astro dev` daemoniserer seg bare når
+// den har en TTY, så i CI ville execSync ventet for alltid. Med spawn
+// fungerer begge tilfeller – enten avslutter CLI-en selv (daemon),
+// eller så eier vi serverprosessen og dreper den i finally.
+const server = spawn("npx", ["astro", "dev", "--port", String(PORT)], {
+  stdio: "ignore",
+});
+
 try {
   // Vent til serveren svarer
   let ready = false;
-  for (let i = 0; i < 30 && !ready; i++) {
+  for (let i = 0; i < 60 && !ready; i++) {
     try {
       await fetch(BASE);
       ready = true;
@@ -175,7 +190,12 @@ try {
 
   await run();
 } finally {
-  execSync("npx astro dev stop", { stdio: "ignore" });
+  try {
+    execSync("npx astro dev stop", { stdio: "ignore", timeout: 15_000 });
+  } catch {
+    // daemonen fantes ikke – serveren kjører som vårt eget barn
+  }
+  server.kill("SIGTERM");
 }
 
 if (failures > 0) {
@@ -183,3 +203,4 @@ if (failures > 0) {
   process.exit(1);
 }
 console.log("\nAlle integrasjonstester besto");
+process.exit(0);
