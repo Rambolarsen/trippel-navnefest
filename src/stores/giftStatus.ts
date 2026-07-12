@@ -9,6 +9,8 @@ export type GiftStatusEntry = {
   mode: "single" | "group";
   reservationCount: number;
   reservedByCurrentVisitor: boolean;
+  // Kun til stede på spleisegaver gjesten selv er påmeldt (MVP.md §8)
+  participants?: string[];
 };
 
 export const $giftStatus = map<Record<string, GiftStatusEntry>>({});

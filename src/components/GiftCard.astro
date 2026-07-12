@@ -116,4 +116,36 @@ const { gift } = Astro.props;
   .reservation-error {
     color: #9b2c13;
   }
+
+  /* Spleisedetaljer (MVP.md §8): deltakerliste og navneskjema */
+  .reservation-status .reservation-participants {
+    font-weight: 400;
+  }
+
+  .reservation-hint {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  .reservation-name-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    width: 100%;
+  }
+
+  .reservation-name-form label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .reservation-name-form input {
+    max-width: 18rem;
+  }
+
+  .reservation-name-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 </style>

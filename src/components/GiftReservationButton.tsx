@@ -1,6 +1,11 @@
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
 import { $giftStatus, type GiftStatusEntry } from "../stores/giftStatus";
+import {
+  $displayName,
+  MAX_DISPLAY_NAME_LENGTH,
+  setDisplayName,
+} from "../stores/displayName";
 
 type Props = {
   giftId: string;
@@ -18,13 +23,17 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
   const status: GiftStatusEntry | undefined = statuses[giftId];
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Spleis krever navn (MVP.md §8): mangler det, spør vi her i kortet
+  const [askName, setAskName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   const known = status !== undefined;
   const mine = status?.reservedByCurrentVisitor ?? false;
   const count = status?.reservationCount ?? 0;
+  const participants = status?.participants;
   const takenByOther = mode === "single" && !mine && count > 0;
 
-  async function act(method: "POST" | "DELETE") {
+  async function act(method: "POST" | "DELETE", displayName?: string) {
     const previous = status;
     setError(null);
     setBusy(true);
@@ -34,7 +43,14 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
     $giftStatus.setKey(
       giftId,
       method === "POST"
-        ? { mode, reservationCount: count + 1, reservedByCurrentVisitor: true }
+        ? {
+            mode,
+            reservationCount: count + 1,
+            reservedByCurrentVisitor: true,
+            ...(displayName && {
+              participants: [...(participants ?? []), displayName],
+            }),
+          }
         : {
             mode,
             reservationCount: Math.max(0, count - 1),
@@ -47,7 +63,14 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         method === "POST"
           ? `/api/gifts/${giftId}/reservations`
           : `/api/gifts/${giftId}/reservations/mine`;
-      const response = await fetch(url, { method });
+      const response = await fetch(url, {
+        method,
+        ...(method === "POST" &&
+          displayName && {
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ displayName }),
+          }),
+      });
 
       if (response.status === 401) {
         window.location.href = "/";
@@ -59,10 +82,13 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         mode: body.mode,
         reservationCount: body.reservationCount,
         reservedByCurrentVisitor: body.reservedByCurrentVisitor,
+        ...(body.participants && { participants: body.participants }),
       });
 
       if (response.status === 409) {
         setError("Oi – noen andre rakk denne rett før deg.");
+      } else if (response.status === 400) {
+        setError("Skriv inn navnet ditt for å bli med på spleisen.");
       }
     } catch {
       if (previous) {
@@ -72,6 +98,26 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
     } finally {
       setBusy(false);
     }
+  }
+
+  // Spleisepåmelding: bruk lagret navn, ellers be om det først
+  function joinGroup() {
+    const name = $displayName.get().trim();
+    if (!name) {
+      setNameInput("");
+      setAskName(true);
+      return;
+    }
+    void act("POST", name);
+  }
+
+  function submitName(event: React.FormEvent) {
+    event.preventDefault();
+    const name = nameInput.trim();
+    if (!name) return;
+    setDisplayName(name); // huskes til neste spleis
+    setAskName(false);
+    void act("POST", name);
   }
 
   let statusLines: string[];
@@ -94,14 +140,55 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         {statusLines.map((line) => (
           <p key={line}>{line}</p>
         ))}
+        {mine && participants && participants.length > 0 && (
+          <p className="reservation-participants">
+            Med på spleisen: {participants.join(", ")}
+          </p>
+        )}
         {error && <p className="reservation-error">{error}</p>}
       </div>
       {mine ? (
-        <button type="button" disabled={busy} onClick={() => act("DELETE")}>
-          {mode === "single" ? "Angre reservasjonen" : "Trekk spleiseinteressen"}
-        </button>
-      ) : takenByOther ? null : (
-        <button type="button" disabled={!known || busy} onClick={() => act("POST")}>
+        <>
+          <button type="button" disabled={busy} onClick={() => act("DELETE")}>
+            {mode === "single" ? "Angre reservasjonen" : "Trekk spleiseinteressen"}
+          </button>
+          {mode === "group" && (
+            <p className="reservation-hint muted">
+              Trekker du interessen, slettes navnet ditt fra spleisen.
+            </p>
+          )}
+        </>
+      ) : takenByOther ? null : askName ? (
+        <form className="reservation-name-form" onSubmit={submitName}>
+          <label htmlFor={`spleisenavn-${giftId}`}>
+            Navnet ditt (vises for de andre på spleisen)
+          </label>
+          <input
+            id={`spleisenavn-${giftId}`}
+            type="text"
+            required
+            autoFocus
+            autoComplete="name"
+            maxLength={MAX_DISPLAY_NAME_LENGTH}
+            placeholder="F.eks. Anna og Ole"
+            value={nameInput}
+            onChange={(event) => setNameInput(event.target.value)}
+          />
+          <div className="reservation-name-actions">
+            <button type="submit" disabled={busy || nameInput.trim() === ""}>
+              Bli med på spleisen
+            </button>
+            <button type="button" onClick={() => setAskName(false)}>
+              Avbryt
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          disabled={!known || busy}
+          onClick={() => (mode === "single" ? void act("POST") : joinGroup())}
+        >
           {mode === "single" ? "Jeg tenker å kjøpe denne" : "Jeg vil være med og spleise"}
         </button>
       )}

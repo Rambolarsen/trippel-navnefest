@@ -16,7 +16,7 @@ Gjester skal kunne:
 - anonymt markere at de vurderer å kjøpe en gave
 - melde interesse for å spleise på større gaver
 
-Det skal ikke opprettes brukerkontoer eller lagres personopplysninger.
+Det skal ikke opprettes brukerkontoer eller lagres personopplysninger, med ett bevisst unntak: ved spleisegaver oppgir gjesten selv et visningsnavn, slik at spleiserne kan finne hverandre (se §8).
 
 ---
 
@@ -235,7 +235,19 @@ Andre gjester kan se antall interessenter:
 
 > 3 personer har meldt interesse for å spleise.
 
-MVP-en skal ikke håndtere betaling eller koordinering av selve spleisen.
+### Visningsnavn på spleisegaver
+
+For at spleiserne skal kunne finne hverandre og koordinere, gjelder følgende:
+
+- Gjesten kan sette navnet sitt etter innlogging (lagres kun i nettleseren, f.eks. localStorage).
+- Navn er **påkrevd** for å melde spleiseinteresse; serveren avviser påmelding uten navn med `400`.
+- Navnet lagres kun på selve reservasjonsraden og slettes når interessen trekkes eller admin nullstiller gaven.
+- Deltakerlisten («Med på spleisen: Anna, Ole») vises **kun** for gjester som selv har meldt interesse på den samme gaven. Andre ser bare antall.
+- En ny påmelding fra samme nettleser oppdaterer navnet i stedet for å legge til en ny rad.
+
+Merk: siden alle gjester deler samme passphrase, kan i praksis også vertskapet (admin) se navnene ved å melde seg på spleisen som gjest. Admin-API-et og adminsiden eksponerer likevel aldri navn.
+
+MVP-en skal ikke håndtere betaling eller koordinering av selve spleisen utover dette.
 
 ---
 
@@ -243,7 +255,7 @@ MVP-en skal ikke håndtere betaling eller koordinering av selve spleisen.
 
 Det skal ikke lagres:
 
-- navn
+- navn (unntak: frivillig oppgitt visningsnavn ved spleiseinteresse, se §8)
 - e-postadresse
 - telefonnummer
 - IP-adresse som del av reservasjonsdata
@@ -305,11 +317,12 @@ export type Reservation = {
   id: string;
   giftId: string;
   reservationTokenHash: string;
+  displayName?: string; // kun spleisegaver (se §8)
   createdAt: string;
 };
 ```
 
-For spleisegaver kan hver interessent ha én egen reservasjonsrad.
+For spleisegaver kan hver interessent ha én egen reservasjonsrad, med påkrevd visningsnavn.
 
 ---
 
@@ -324,6 +337,7 @@ CREATE TABLE reservations (
   id TEXT PRIMARY KEY,
   gift_id TEXT NOT NULL,
   reservation_token_hash TEXT NOT NULL,
+  display_name TEXT, -- kun spleisegaver (se §8)
   created_at TEXT NOT NULL
 );
 CREATE INDEX idx_reservations_gift_id
@@ -375,7 +389,8 @@ Eksempel:
   "nintendo-switch-2": {
     "mode": "group",
     "reservationCount": 3,
-    "reservedByCurrentVisitor": true
+    "reservedByCurrentVisitor": true,
+    "participants": ["Anna", "Ole", "Kari"]
   },
   "lego-sett": {
     "mode": "single",
@@ -385,18 +400,29 @@ Eksempel:
 }
 ```
 
+Feltet `participants` finnes kun på spleisegaver gjesten selv er påmeldt (se §8); ellers utelates det.
+
 ### `POST /api/gifts/:giftId/reservations`
 
 Opprett reservasjon eller spleiseinteresse.
+
+For spleisegaver er input påkrevd:
+
+```json
+{
+  "displayName": "Anna"
+}
+```
 
 Serveren skal:
 
 1. kontrollere innloggingssesjonen
 2. kontrollere at gaven finnes
 3. kontrollere gavens modus
-4. kontrollere om brukeren allerede har registrert seg
-5. opprette reservasjonen
-6. returnere oppdatert status
+4. for spleisegaver: kreve et gyldig visningsnavn, ellers `400`
+5. kontrollere om brukeren allerede har registrert seg
+6. opprette reservasjonen (eller oppdatere eget visningsnavn)
+7. returnere oppdatert status (med `participants` for spleisegaver)
 
 For enkeltgaver skal forespørselen avvises med `409 Conflict` dersom gaven allerede er reservert.
 
@@ -704,8 +730,10 @@ Start med et lite representativt utvalg.
 
 - Flere gjester kan melde interesse.
 - Antall interessenter vises.
+- Påmelding krever visningsnavn.
+- Deltakernavn vises kun for gjester som selv er påmeldt gaven.
 - Hver nettleser kan kun registrere én interesse per gave.
-- Gjesten kan trekke sin egen interesse.
+- Gjesten kan trekke sin egen interesse; navnet slettes samtidig.
 
 ### Admin
 
@@ -733,6 +761,7 @@ Test minst:
 - reservasjon av enkeltgave
 - avvisning når enkeltgave allerede er reservert
 - flere reservasjoner på spleisegave
+- lagring, oppdatering og sletting av visningsnavn på spleisegave
 - sletting av egen reservasjon
 - avvisning av sletting med feil token
 

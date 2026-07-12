@@ -70,6 +70,23 @@ export async function getOrCreateReservationTokenHash(
 
 export type ReserveResult = "created" | "already-mine" | "conflict";
 
+// Visningsnavn på spleisegaver (MVP.md §8). Grensen speiles i
+// klientkoden (src/stores/displayName.ts), som ikke kan importere
+// denne filen fordi den drar inn "cloudflare:workers".
+export const MAX_DISPLAY_NAME_LENGTH = 60;
+
+// Normaliserer et innsendt visningsnavn: fjerner kontrolltegn,
+// trimmer og kapper til makslengden. Tomt/ugyldig → null.
+export function normalizeDisplayName(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  const cleaned = input
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, MAX_DISPLAY_NAME_LENGTH)
+    .trim();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
 // Enkeltgave: den betingede INSERT-en er ett SQL-statement og dermed
 // atomisk – to samtidige forespørsler kan ikke begge få changes > 0
 // (MVP.md §11).
@@ -98,19 +115,51 @@ export async function reserveSingleGift(
 
 // Spleisegave: flere interessenter tillatt; den unike indeksen
 // (gift_id, reservation_token_hash) sørger for maks én per nettleser.
+// Visningsnavnet er påkrevd (MVP.md §8) og valideres i API-laget med
+// normalizeDisplayName før dette kalles.
 export async function addGroupInterest(
   db: D1Database,
   giftId: string,
   tokenHash: string,
+  displayName: string,
 ): Promise<ReserveResult> {
   const result = await db
     .prepare(
-      `INSERT OR IGNORE INTO reservations (id, gift_id, reservation_token_hash, created_at)
-       VALUES (?1, ?2, ?3, ?4)`,
+      `INSERT OR IGNORE INTO reservations (id, gift_id, reservation_token_hash, display_name, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5)`,
     )
-    .bind(crypto.randomUUID(), giftId, tokenHash, new Date().toISOString())
+    .bind(crypto.randomUUID(), giftId, tokenHash, displayName, new Date().toISOString())
     .run();
-  return result.meta.changes > 0 ? "created" : "already-mine";
+  if (result.meta.changes > 0) return "created";
+
+  // Allerede påmeldt: en ny innsending oppdaterer navnet på egen rad,
+  // slik at man kan rette det uten å trekke interessen først.
+  await db
+    .prepare(
+      `UPDATE reservations SET display_name = ?1
+       WHERE gift_id = ?2 AND reservation_token_hash = ?3`,
+    )
+    .bind(displayName, giftId, tokenHash)
+    .run();
+  return "already-mine";
+}
+
+// Navnene på spleisedeltakerne, i påmeldingsrekkefølge. Skal kun
+// eksponeres til gjester som selv deltar på gaven (MVP.md §8) –
+// tilgangskontrollen ligger i API-laget. Returnerer aldri hasher.
+export async function getGroupParticipants(
+  db: D1Database,
+  giftId: string,
+): Promise<string[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT display_name FROM reservations
+       WHERE gift_id = ?1 AND display_name IS NOT NULL
+       ORDER BY created_at, id`,
+    )
+    .bind(giftId)
+    .all<{ display_name: string }>();
+  return results.map((row) => row.display_name);
 }
 
 // Sletter kun raden som samsvarer med gjestens eget token (MVP.md §12).

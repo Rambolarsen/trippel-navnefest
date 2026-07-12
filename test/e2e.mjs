@@ -124,10 +124,46 @@ async function run() {
     body["duplo"].reservationCount === 1 && body["duplo"].reservedByCurrentVisitor,
   );
 
+  console.log("Spleisegave:");
   res = await A("/api/gifts/nintendo-switch-2/reservations", { method: "POST" });
-  res = await B("/api/gifts/nintendo-switch-2/reservations", { method: "POST" });
+  check("spleis uten navn avvises med 400", res.status === 400, `(${res.status})`);
+
+  res = await A("/api/gifts/nintendo-switch-2/reservations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName: "Anna" }),
+  });
   body = await res.json();
-  check("spleisegave teller to interessenter", res.status === 201 && body.reservationCount === 2);
+  check(
+    "A melder spleiseinteresse med navn og ser seg selv",
+    res.status === 201 && JSON.stringify(body.participants) === '["Anna"]',
+  );
+
+  res = await B("/api/gifts/status");
+  body = await res.json();
+  check(
+    "B (ikke deltaker) ser antall, men ingen navn",
+    body["nintendo-switch-2"].reservationCount === 1 &&
+      body["nintendo-switch-2"].participants === undefined,
+  );
+
+  res = await B("/api/gifts/nintendo-switch-2/reservations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName: "Ole" }),
+  });
+  body = await res.json();
+  check(
+    "spleisegave teller to interessenter",
+    res.status === 201 && body.reservationCount === 2,
+  );
+
+  res = await B("/api/gifts/status");
+  body = await res.json();
+  check(
+    "B (deltaker) ser begge navnene",
+    JSON.stringify(body["nintendo-switch-2"].participants) === '["Anna","Ole"]',
+  );
 
   res = await B("/api/gifts/duplo/reservations/mine", { method: "DELETE" });
   body = await res.json();

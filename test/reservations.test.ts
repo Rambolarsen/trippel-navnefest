@@ -7,8 +7,10 @@ import {
   deleteMyReservation,
   getGiftIdsReservedBy,
   getGiftReservationStatus,
+  getGroupParticipants,
   getOrCreateReservationTokenHash,
   getReservationTokenHash,
+  normalizeDisplayName,
   reserveSingleGift,
 } from "../src/lib/reservations";
 import { fakeCookies } from "./helpers";
@@ -74,9 +76,15 @@ describe("enkeltgaver (MVP.md §22)", () => {
 
 describe("spleisegaver (MVP.md §22)", () => {
   it("tillater flere interessenter", async () => {
-    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-a")).toBe("created");
-    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-b")).toBe("created");
-    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-c")).toBe("created");
+    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna")).toBe(
+      "created",
+    );
+    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-b", "Ole")).toBe(
+      "created",
+    );
+    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-c", "Kari")).toBe(
+      "created",
+    );
     const { reservationCount } = await getGiftReservationStatus(
       db,
       "nintendo-switch-2",
@@ -86,8 +94,8 @@ describe("spleisegaver (MVP.md §22)", () => {
   });
 
   it("maks én interesse per nettleser", async () => {
-    await addGroupInterest(db, "nintendo-switch-2", "hash-a");
-    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-a")).toBe(
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    expect(await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna")).toBe(
       "already-mine",
     );
     const { reservationCount } = await getGiftReservationStatus(
@@ -96,6 +104,63 @@ describe("spleisegaver (MVP.md §22)", () => {
       null,
     );
     expect(reservationCount).toBe(1);
+  });
+});
+
+describe("spleisedeltakere (MVP.md §8)", () => {
+  it("lagrer navn og lister deltakerne i påmeldingsrekkefølge", async () => {
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    await addGroupInterest(db, "nintendo-switch-2", "hash-b", "Ole");
+    expect(await getGroupParticipants(db, "nintendo-switch-2")).toEqual([
+      "Anna",
+      "Ole",
+    ]);
+  });
+
+  it("re-påmelding oppdaterer eget navn uten å trekke interessen", async () => {
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    expect(
+      await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna og Ole"),
+    ).toBe("already-mine");
+    expect(await getGroupParticipants(db, "nintendo-switch-2")).toEqual([
+      "Anna og Ole",
+    ]);
+    const { reservationCount } = await getGiftReservationStatus(
+      db,
+      "nintendo-switch-2",
+      null,
+    );
+    expect(reservationCount).toBe(1);
+  });
+
+  it("navnet slettes sammen med reservasjonen", async () => {
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    await deleteMyReservation(db, "nintendo-switch-2", "hash-a");
+    expect(await getGroupParticipants(db, "nintendo-switch-2")).toEqual([]);
+  });
+
+  it("enkeltgaver får aldri deltakernavn", async () => {
+    await reserveSingleGift(db, "duplo", "hash-a");
+    expect(await getGroupParticipants(db, "duplo")).toEqual([]);
+  });
+});
+
+describe("normalizeDisplayName (MVP.md §8)", () => {
+  it("trimmer og godtar vanlige navn", () => {
+    expect(normalizeDisplayName("  Anna og Ole  ")).toBe("Anna og Ole");
+  });
+
+  it("avviser tomt, manglende og ikke-streng", () => {
+    expect(normalizeDisplayName("")).toBeNull();
+    expect(normalizeDisplayName("   ")).toBeNull();
+    expect(normalizeDisplayName(undefined)).toBeNull();
+    expect(normalizeDisplayName(42)).toBeNull();
+  });
+
+  it("fjerner kontrolltegn og kapper til 60 tegn", () => {
+    expect(normalizeDisplayName("An\tna\r\n")).toBe("Anna");
+    const langt = "a".repeat(80);
+    expect(normalizeDisplayName(langt)).toHaveLength(60);
   });
 });
 
@@ -115,8 +180,8 @@ describe("sletting (MVP.md §22)", () => {
   });
 
   it("admin-nullstilling fjerner alle rader for gaven", async () => {
-    await addGroupInterest(db, "nintendo-switch-2", "hash-a");
-    await addGroupInterest(db, "nintendo-switch-2", "hash-b");
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    await addGroupInterest(db, "nintendo-switch-2", "hash-b", "Ole");
     await reserveSingleGift(db, "duplo", "hash-c");
     expect(await deleteAllReservationsForGift(db, "nintendo-switch-2")).toBe(2);
     const counts = await countReservationsByGift(db);
@@ -128,8 +193,8 @@ describe("sletting (MVP.md §22)", () => {
 describe("statuslesing", () => {
   it("teller per gave og flagger gjeldende gjest", async () => {
     await reserveSingleGift(db, "duplo", "hash-a");
-    await addGroupInterest(db, "nintendo-switch-2", "hash-a");
-    await addGroupInterest(db, "nintendo-switch-2", "hash-b");
+    await addGroupInterest(db, "nintendo-switch-2", "hash-a", "Anna");
+    await addGroupInterest(db, "nintendo-switch-2", "hash-b", "Ole");
 
     const counts = await countReservationsByGift(db);
     expect(counts.get("duplo")).toBe(1);
