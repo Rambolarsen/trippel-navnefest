@@ -70,22 +70,9 @@ export async function getOrCreateReservationTokenHash(
 
 export type ReserveResult = "created" | "already-mine" | "conflict";
 
-// Visningsnavn på spleisegaver (MVP.md §8). Grensen speiles i
-// klientkoden (src/stores/displayName.ts), som ikke kan importere
-// denne filen fordi den drar inn "cloudflare:workers".
-export const MAX_DISPLAY_NAME_LENGTH = 60;
-
-// Normaliserer et innsendt visningsnavn: fjerner kontrolltegn,
-// trimmer og kapper til makslengden. Tomt/ugyldig → null.
-export function normalizeDisplayName(input: unknown): string | null {
-  if (typeof input !== "string") return null;
-  const cleaned = input
-    .replace(/[\u0000-\u001f\u007f]/g, "")
-    .trim()
-    .slice(0, MAX_DISPLAY_NAME_LENGTH)
-    .trim();
-  return cleaned.length > 0 ? cleaned : null;
-}
+// Delt med klientkoden via ./display-name (denne filen kan ikke
+// importeres i nettleseren fordi den drar inn "cloudflare:workers").
+export { MAX_DISPLAY_NAME_LENGTH, normalizeDisplayName } from "./display-name";
 
 // Enkeltgave: den betingede INSERT-en er ett SQL-statement og dermed
 // atomisk – to samtidige forespørsler kan ikke begge få changes > 0

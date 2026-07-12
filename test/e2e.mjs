@@ -165,6 +165,19 @@ async function run() {
     JSON.stringify(body["nintendo-switch-2"].participants) === '["Anna","Ole"]',
   );
 
+  res = await A("/api/gifts/nintendo-switch-2/reservations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName: "Anna og Per" }),
+  });
+  body = await res.json();
+  check(
+    "re-påmelding oppdaterer navnet uten ny rad",
+    res.status === 200 &&
+      body.reservationCount === 2 &&
+      JSON.stringify(body.participants) === '["Anna og Per","Ole"]',
+  );
+
   res = await B("/api/gifts/duplo/reservations/mine", { method: "DELETE" });
   body = await res.json();
   check("B kan ikke slette A sin reservasjon", body.reservationCount === 1);

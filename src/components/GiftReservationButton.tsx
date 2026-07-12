@@ -1,6 +1,10 @@
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
-import { $giftStatus, type GiftStatusEntry } from "../stores/giftStatus";
+import {
+  $giftStatus,
+  refreshGiftStatus,
+  type GiftStatusEntry,
+} from "../stores/giftStatus";
 import {
   $displayName,
   MAX_DISPLAY_NAME_LENGTH,
@@ -23,7 +27,8 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
   const status: GiftStatusEntry | undefined = statuses[giftId];
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Spleis krever navn (MVP.md §8): mangler det, spør vi her i kortet
+  // Spleis krever navn (MVP.md §8): mangler det, spør vi her i kortet.
+  // Skjemaet brukes også til å endre navn når man allerede er påmeldt.
   const [askName, setAskName] = useState(false);
   const [nameInput, setNameInput] = useState("");
 
@@ -38,25 +43,29 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
     setError(null);
     setBusy(true);
 
-    // Optimistisk oppdatering – tilbakestilles ved nettverksfeil,
-    // og overskrives alltid av serverens fasit når svaret kommer.
-    $giftStatus.setKey(
-      giftId,
-      method === "POST"
-        ? {
-            mode,
-            reservationCount: count + 1,
-            reservedByCurrentVisitor: true,
-            ...(displayName && {
-              participants: [...(participants ?? []), displayName],
-            }),
-          }
-        : {
-            mode,
-            reservationCount: Math.max(0, count - 1),
-            reservedByCurrentVisitor: false,
-          },
-    );
+    // Optimistisk oppdatering – tilbakestilles ved feil, og overskrives
+    // alltid av serverens fasit når svaret kommer. Navneendring for en
+    // som allerede er påmeldt endrer verken antall eller eget flagg,
+    // så da hopper vi over den.
+    if (!(method === "POST" && mine)) {
+      $giftStatus.setKey(
+        giftId,
+        method === "POST"
+          ? {
+              mode,
+              reservationCount: count + 1,
+              reservedByCurrentVisitor: true,
+              ...(displayName && {
+                participants: [...(participants ?? []), displayName],
+              }),
+            }
+          : {
+              mode,
+              reservationCount: Math.max(0, count - 1),
+              reservedByCurrentVisitor: false,
+            },
+      );
+    }
 
     try {
       const url =
@@ -77,18 +86,30 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         return;
       }
 
-      const body = (await response.json()) as GiftStatusEntry & { giftId: string };
-      $giftStatus.setKey(giftId, {
-        mode: body.mode,
-        reservationCount: body.reservationCount,
-        reservedByCurrentVisitor: body.reservedByCurrentVisitor,
-        ...(body.participants && { participants: body.participants }),
-      });
-
-      if (response.status === 409) {
-        setError("Oi – noen andre rakk denne rett før deg.");
-      } else if (response.status === 400) {
-        setError("Skriv inn navnet ditt for å bli med på spleisen.");
+      // Kun 2xx og 409 bærer en status-body; andre feilsvar er bare
+      // { error } og skal ikke inn i storen.
+      if (response.ok || response.status === 409) {
+        const body = (await response.json()) as GiftStatusEntry & { giftId: string };
+        $giftStatus.setKey(giftId, {
+          mode: body.mode,
+          reservationCount: body.reservationCount,
+          reservedByCurrentVisitor: body.reservedByCurrentVisitor,
+          ...(body.participants && { participants: body.participants }),
+        });
+        if (response.status === 409) {
+          setError("Oi – noen andre rakk denne rett før deg.");
+        }
+      } else {
+        if (previous) {
+          $giftStatus.setKey(giftId, previous);
+        } else {
+          void refreshGiftStatus();
+        }
+        setError(
+          response.status === 400
+            ? "Skriv inn navnet ditt for å bli med på spleisen."
+            : "Noe gikk galt. Prøv gjerne igjen.",
+        );
       }
     } catch {
       if (previous) {
@@ -109,6 +130,13 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
       return;
     }
     void act("POST", name);
+  }
+
+  // Åpner skjemaet for å endre navnet på en eksisterende påmelding –
+  // også for påmeldinger fra før navn ble innført (uten lagret navn).
+  function editName() {
+    setNameInput($displayName.get());
+    setAskName(true);
   }
 
   function submitName(event: React.FormEvent) {
@@ -147,18 +175,7 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         )}
         {error && <p className="reservation-error">{error}</p>}
       </div>
-      {mine ? (
-        <>
-          <button type="button" disabled={busy} onClick={() => act("DELETE")}>
-            {mode === "single" ? "Angre reservasjonen" : "Trekk spleiseinteressen"}
-          </button>
-          {mode === "group" && (
-            <p className="reservation-hint muted">
-              Trekker du interessen, slettes navnet ditt fra spleisen.
-            </p>
-          )}
-        </>
-      ) : takenByOther ? null : askName ? (
+      {askName ? (
         <form className="reservation-name-form" onSubmit={submitName}>
           <label htmlFor={`spleisenavn-${giftId}`}>
             Navnet ditt (vises for de andre på spleisen)
@@ -176,14 +193,32 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
           />
           <div className="reservation-name-actions">
             <button type="submit" disabled={busy || nameInput.trim() === ""}>
-              Bli med på spleisen
+              {mine ? "Lagre navn" : "Bli med på spleisen"}
             </button>
             <button type="button" onClick={() => setAskName(false)}>
               Avbryt
             </button>
           </div>
         </form>
-      ) : (
+      ) : mine ? (
+        <>
+          <div className="reservation-name-actions">
+            <button type="button" disabled={busy} onClick={() => act("DELETE")}>
+              {mode === "single" ? "Angre reservasjonen" : "Trekk spleiseinteressen"}
+            </button>
+            {mode === "group" && (
+              <button type="button" disabled={busy} onClick={editName}>
+                Endre navn
+              </button>
+            )}
+          </div>
+          {mode === "group" && (
+            <p className="reservation-hint muted">
+              Trekker du interessen, slettes navnet ditt fra spleisen.
+            </p>
+          )}
+        </>
+      ) : takenByOther ? null : (
         <button
           type="button"
           disabled={!known || busy}
