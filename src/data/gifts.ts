@@ -20,8 +20,7 @@ export const gifts: Gift[] = [
   {
     id: "nintendo-switch-2",
     title: "Nintendo Switch 2",
-    description:
-      "En fellesgave barna og familien kan ha glede av i mange år. 7,9\" FHD-skjerm med HDR10 og VRR (opptil 120 bilder/sek), og opptil 4K når den er koblet til TV.",
+    description: "En fellesgave barna kan ha glede av i mange år.",
     tags: ["Jonas", "Sofie", "Fellesgave", "Spleisegave"],
     priceLabel: "Ca. 6 090 kr – stor spleisegave",
     priority: "high",
