@@ -20,11 +20,13 @@ export const gifts: Gift[] = [
   {
     id: "nintendo-switch-2",
     title: "Nintendo Switch 2",
-    description: "En fellesgave barna og familien kan ha glede av i mange år.",
+    description:
+      "En fellesgave barna og familien kan ha glede av i mange år. 7,9\" FHD-skjerm med HDR10 og VRR (opptil 120 bilder/sek), og opptil 4K når den er koblet til TV.",
     tags: ["Jonas", "Sofie", "Fellesgave", "Spleisegave"],
-    priceLabel: "Stor spleisegave",
+    priceLabel: "Ca. 6 090 kr – stor spleisegave",
     priority: "high",
     mode: "group",
+    link: "https://www.power.no/gaming/nintendo/nintendo-konsoll/nintendo-switch-2-spillkonsoll/p-4089807/",
   },
   {
     id: "duplo",
