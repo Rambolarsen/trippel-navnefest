@@ -190,6 +190,63 @@ export const gifts: Gift[] = [
     mode: "single",
     link: "https://www.partyking.no/k-pop-star-lotus-kostyme-111966.html",
   },
+  {
+    id: "liggeunderlag-edvin",
+    title: "Liggeunderlag",
+    description: "Kayoba skum-liggeunderlag, 200x50x2 cm.",
+    tags: ["Edvin", "Friluft"],
+    priceLabel: "Ca. 160 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/liggeunderlag/liggeunderlag-030842/",
+  },
+  {
+    id: "sovepose-edvin",
+    title: "Sovepose / teppepose",
+    description:
+      "Kayoba teppepose, 190x75 cm. Kan lynes igjen til sovepose eller brukes åpen som teppe.",
+    tags: ["Edvin", "Friluft"],
+    priceLabel: "Ca. 180 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/soveposer/teppepose-008707/",
+  },
+  {
+    id: "liggeunderlag-jonas",
+    title: "Liggeunderlag",
+    description: "Kayoba skum-liggeunderlag, 200x50x2 cm.",
+    tags: ["Jonas", "Friluft"],
+    priceLabel: "Ca. 160 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/liggeunderlag/liggeunderlag-030842/",
+  },
+  {
+    id: "sovepose-jonas",
+    title: "Sovepose / teppepose",
+    description:
+      "Kayoba teppepose, 190x75 cm. Kan lynes igjen til sovepose eller brukes åpen som teppe.",
+    tags: ["Jonas", "Friluft"],
+    priceLabel: "Ca. 180 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/soveposer/teppepose-008707/",
+  },
+  {
+    id: "liggeunderlag-sofie",
+    title: "Liggeunderlag",
+    description: "Kayoba skum-liggeunderlag, 200x50x2 cm.",
+    tags: ["Sofie", "Friluft"],
+    priceLabel: "Ca. 160 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/liggeunderlag/liggeunderlag-030842/",
+  },
+  {
+    id: "sovepose-sofie",
+    title: "Sovepose / teppepose",
+    description:
+      "Kayoba teppepose, 190x75 cm. Kan lynes igjen til sovepose eller brukes åpen som teppe.",
+    tags: ["Sofie", "Friluft"],
+    priceLabel: "Ca. 180 kr",
+    mode: "single",
+    link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/soveposer/teppepose-008707/",
+  },
 ];
 
 export function getGiftById(id: string): Gift | undefined {
