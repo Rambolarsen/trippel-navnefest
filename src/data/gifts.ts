@@ -156,6 +156,16 @@ export const gifts: Gift[] = [
     link: "https://panduro.com/nb-no/products/barn-junior/mal-tegn/fargeblyanter-kritt/tusjer-panduro-magic-10-stk-805004",
   },
   {
+    id: "panduro-hama-midi-havdyr",
+    title: "Panduro Hama midi 2500, Havdyr",
+    description:
+      "2500 rørperler, perlebrett (15x15 cm), strykepapir og mønster. Fra 5 år.",
+    tags: ["Sofie", "Kreativt"],
+    priceLabel: "Ca. 140 kr",
+    mode: "single",
+    link: "https://panduro.com/nb-no/products/barn-junior/hama-perler/sett/hama-midi-2500-havdyr-802399",
+  },
+  {
     id: "lego-sofie",
     title: "Lego",
     description: "Lego-sett for en erfaren bygger på sju år.",
