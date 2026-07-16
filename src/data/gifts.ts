@@ -20,7 +20,7 @@ export const gifts: Gift[] = [
   {
     id: "nintendo-switch-2",
     title: "Nintendo Switch 2",
-    description: "En fellesgave barna kan ha glede av i mange år.",
+    description: "Med eller uten spill",
     tags: ["Jonas", "Sofie", "Fellesgave", "Spleisegave"],
     priceLabel: "Ca. 6 090 kr – stor spleisegave",
     priority: "high",
