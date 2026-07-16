@@ -170,6 +170,15 @@ export const gifts: Gift[] = [
     mode: "single",
     link: "https://www.partyking.no/k-pop-demon-hunterstm-rumi-barn-kostyme-112695.html",
   },
+  {
+    id: "kpop-demon-hunters-kostyme-zoey",
+    title: "K-pop Demon Hunters™ Zoey-kostyme",
+    description: "Kostyme av Zoey fra K-pop Demon Hunters. Str. XS–L.",
+    tags: ["Sofie", "Kostyme"],
+    priceLabel: "Ca. 600 kr",
+    mode: "single",
+    link: "https://www.partyking.no/k-pop-kostymer/",
+  },
 ];
 
 export function getGiftById(id: string): Gift | undefined {
