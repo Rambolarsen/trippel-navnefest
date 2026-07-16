@@ -156,14 +156,14 @@ export const gifts: Gift[] = [
     link: "https://panduro.com/nb-no/products/barn-junior/mal-tegn/fargeblyanter-kritt/tusjer-panduro-magic-10-stk-805004",
   },
   {
-    id: "panduro-perlesett-enhjorning",
-    title: "Panduro Perlesett gnistrende enhjørning",
+    id: "panduro-unicorn-smykkesett",
+    title: "Panduro Unicorn smykkesett",
     description:
-      "2700 Hama-perler i fargemiks, blir en glitrende enhjørning (21x26,5 cm).",
+      "Enhjørningeske fylt med alt for å perle armbånd. Merk: utsolgt hos Panduro akkurat nå, men kan komme tilbake på lager.",
     tags: ["Sofie", "Kreativt"],
-    priceLabel: "Pris ikke bekreftet",
+    priceLabel: "399 kr",
     mode: "single",
-    link: "https://panduro.com/nb-no/products/barn-junior/roerperler/hama-midi/perlesett-gnistrende-enhjorning-unicorn-2700-hama-perler-i-en-utrolig-fargemiks-806049",
+    link: "https://panduro.com/nb-no/products/barn-junior/smykkeperler-accessoirer/perler/unicorn-smykkesett-kjempesot-enhjorningeske-fylt-med-alt-for-a-perle-armband-806667",
   },
   {
     id: "lego-sofie",
