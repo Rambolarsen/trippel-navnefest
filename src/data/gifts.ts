@@ -77,6 +77,36 @@ export const gifts: Gift[] = [
     mode: "single",
   },
   {
+    id: "lego-minecraft-birokterens-hytte",
+    title: "LEGO Minecraft – Birøkterens hytte",
+    description:
+      "Sett 21241 med bihus, avlinger og zombiekamp. 254 deler.",
+    tags: ["Jonas", "Lego", "Minecraft"],
+    priceLabel: "Ca. 250–300 kr",
+    mode: "single",
+    link: "https://www.lego.com/nb-no/product/the-bee-cottage-21241",
+  },
+  {
+    id: "lego-minecraft-ulveborgen",
+    title: "LEGO Minecraft – Ulveborgen",
+    description:
+      "Sett 21261 med ulveborg, håndverksstasjoner og figurer som ulvetemmer og skjelett.",
+    tags: ["Jonas", "Lego", "Minecraft"],
+    priceLabel: "Ca. 400–480 kr",
+    mode: "single",
+    link: "https://www.lego.com/nb-no/product/the-wolf-stronghold-21261",
+  },
+  {
+    id: "lego-minecraft-enderdrage",
+    title: "LEGO Minecraft – Enderdrage og End Ship",
+    description:
+      "Sett 21264 med enderdrage og endeskip – det største og mest avanserte av settene, for en erfaren bygger.",
+    tags: ["Jonas", "Lego", "Minecraft"],
+    priceLabel: "Ca. 800–980 kr",
+    mode: "single",
+    link: "https://www.lego.com/nb-no/product/the-ender-dragon-and-end-ship-21264",
+  },
+  {
     id: "hobby-og-tegnesaker",
     title: "Hobby- og tegnesaker",
     description: "Tusjer, fargeblyanter, klistremerker og annet kreativt.",
