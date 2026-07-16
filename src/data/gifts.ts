@@ -161,23 +161,34 @@ export const gifts: Gift[] = [
     mode: "single",
   },
   {
-    id: "kpop-demon-hunters-kostyme",
-    title: "K-pop Demon Hunters™ Rumi-kostyme",
+    id: "kpop-demon-hunters-kostyme-rumi",
+    title: "K-pop Demon Hunters™ Rumi-kostyme (selges som «Nova»)",
     description:
-      "Kostyme av Rumi fra K-pop Demon Hunters, med jakke, shorts og beinvarmere i rosa/grønne striper. Størrelse Small.",
+      "Kostyme av Rumi fra K-pop Demon Hunters, solgt under navnet «K-pop Star Nova» hos Partyking. Størrelse S.",
     tags: ["Sofie", "Kostyme"],
-    priceLabel: "Ca. 600 kr",
+    priceLabel: "479 kr",
     mode: "single",
-    link: "https://www.partyking.no/k-pop-demon-hunterstm-rumi-barn-kostyme-112695.html",
+    link: "https://www.partyking.no/k-pop-star-nova-kostyme-111976.html",
+  },
+  {
+    id: "kpop-demon-hunters-kostyme-mira",
+    title: "K-pop Demon Hunters™ Mira-kostyme (selges som «Hunter»)",
+    description:
+      "Kostyme av Mira fra K-pop Demon Hunters, solgt under navnet «K-pop Star Hunter» hos Partyking. Størrelse S.",
+    tags: ["Sofie", "Kostyme"],
+    priceLabel: "479 kr",
+    mode: "single",
+    link: "https://www.partyking.no/k-pop-star-hunter-kostyme-111970.html",
   },
   {
     id: "kpop-demon-hunters-kostyme-zoey",
-    title: "K-pop Demon Hunters™ Zoey-kostyme",
-    description: "Kostyme av Zoey fra K-pop Demon Hunters. Str. XS–L.",
+    title: "K-pop Demon Hunters™ Zoey-kostyme (selges som «Lotus»)",
+    description:
+      "Kostyme av Zoey fra K-pop Demon Hunters, solgt under navnet «K-pop Star Lotus» hos Partyking. Størrelse S.",
     tags: ["Sofie", "Kostyme"],
-    priceLabel: "Ca. 600 kr",
+    priceLabel: "479 kr",
     mode: "single",
-    link: "https://www.partyking.no/k-pop-kostymer/",
+    link: "https://www.partyking.no/k-pop-star-lotus-kostyme-111966.html",
   },
 ];
 
