@@ -107,6 +107,36 @@ export const gifts: Gift[] = [
     link: "https://www.lego.com/nb-no/product/the-ender-dragon-and-end-ship-21264",
   },
   {
+    id: "hotwheels-track-creator",
+    title: "Hot Wheels Track Creator Bil & banepakke",
+    description:
+      "Enkel startpakke med én bil og ca. 3 meter bane som kan bygges og formes selv.",
+    tags: ["Jonas", "Hot Wheels", "Bilbane"],
+    priceLabel: "Ca. 260–300 kr",
+    mode: "single",
+    link: "https://www.prisjakt.no/product.php?p=15657260",
+  },
+  {
+    id: "hotwheels-f1-sprint-race-circuit",
+    title: "Hot Wheels Bilbane – Racing Formula 1 Sprint Race Circuit",
+    description:
+      "F1-tema bane med launcher og tre Formel 1-biler i skala 1:64.",
+    tags: ["Jonas", "Hot Wheels", "Bilbane"],
+    priceLabel: "Ca. 580 kr",
+    mode: "single",
+    link: "https://www.extra-leker.no/leker/lekebiler-og-kjoretoy/bilbaner/hot-wheels-bilbane-racing-formula-1-sprint-race-circuit",
+  },
+  {
+    id: "hotwheels-ultimate-garage",
+    title: "Hot Wheels Ultimate Garage",
+    description:
+      "Stor garasje og bilbane med plass til over 100 biler, lyd- og lyseffekter.",
+    tags: ["Jonas", "Hot Wheels", "Bilbane"],
+    priceLabel: "Ca. 2 299 kr",
+    mode: "single",
+    link: "https://www.avxperten.no/legetoejsbiler-og-bilbaner/hot-wheels-ultimate-garage-5aar.asp",
+  },
+  {
     id: "hobby-og-tegnesaker",
     title: "Hobby- og tegnesaker",
     description: "Tusjer, fargeblyanter, klistremerker og annet kreativt.",
