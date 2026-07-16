@@ -136,12 +136,24 @@ export const gifts: Gift[] = [
     link: "https://www.avxperten.no/legetoejsbiler-og-bilbaner/hot-wheels-ultimate-garage-5aar.asp",
   },
   {
-    id: "hobby-og-tegnesaker",
-    title: "Hobby- og tegnesaker",
-    description: "Tusjer, fargeblyanter, klistremerker og annet kreativt.",
+    id: "panduro-hobbysett-refill-basic",
+    title: "Panduro Hobbysett Refill Basic",
+    description:
+      "Pipenrensere, glitter, paljetter, øyne og pomponger i tube – verdi ca. 350 kr.",
     tags: ["Sofie", "Kreativt"],
-    priceLabel: "Under 500 kr",
+    priceLabel: "Ca. 130 kr",
     mode: "single",
+    link: "https://panduro.com/nb-no/products/barn-junior/diy-kit/hobbyror/hobbysett-refill-basic-700151",
+  },
+  {
+    id: "panduro-tusjer-magic",
+    title: "Panduro Tusjer Magic, 10 stk",
+    description:
+      "Magiske tusjer som bytter farge når man tegner over med den hvite pennen.",
+    tags: ["Sofie", "Kreativt"],
+    priceLabel: "Ca. 90 kr",
+    mode: "single",
+    link: "https://panduro.com/nb-no/products/barn-junior/mal-tegn/fargeblyanter-kritt/tusjer-panduro-magic-10-stk-805004",
   },
   {
     id: "lego-sofie",
