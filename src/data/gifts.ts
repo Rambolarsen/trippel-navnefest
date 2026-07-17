@@ -242,7 +242,7 @@ export const gifts: Gift[] = [
     id: "kpop-demon-hunters-kostyme-rumi",
     title: "K-pop Demon Hunters™ Rumi barnkostyme",
     description:
-      "Offisielt lisensiert barnkostyme med jakke, shorts og benvarmere. Finnes i barnestørrelsene XS–L.",
+      "Offisielt lisensiert barnkostyme med jakke, shorts og benvarmere. Størrelse S.",
     tags: ["Sofie", "Kostyme"],
     priceLabel: "599,90 kr",
     mode: "single",
@@ -253,7 +253,7 @@ export const gifts: Gift[] = [
     id: "kpop-demon-hunters-kostyme-mira",
     title: "K-pop Demon Hunters™ Mira barnkostyme",
     description:
-      "Offisielt lisensiert barnkostyme i størrelsene XS–L.",
+      "Offisielt lisensiert barnkostyme. Størrelse S.",
     tags: ["Sofie", "Kostyme"],
     priceLabel: "599,90 kr",
     mode: "single",
@@ -264,7 +264,7 @@ export const gifts: Gift[] = [
     id: "kpop-demon-hunters-kostyme-zoey",
     title: "K-pop Demon Hunters™ Zoey barnkostyme",
     description:
-      "Offisielt lisensiert barnkostyme i størrelsene XS–L.",
+      "Offisielt lisensiert barnkostyme. Størrelse S.",
     tags: ["Sofie", "Kostyme"],
     priceLabel: "599,90 kr",
     mode: "single",
