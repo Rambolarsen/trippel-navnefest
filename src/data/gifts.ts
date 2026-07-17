@@ -22,9 +22,10 @@ export const gifts: Gift[] = [
     title: "Nintendo Switch 2",
     description: "Med eller uten spill",
     tags: ["Jonas", "Sofie", "Fellesgave", "Spleisegave"],
-    priceLabel: "Ca. 6 090 kr – stor spleisegave",
+    priceLabel: "6 090 kr – stor spleisegave",
     priority: "high",
     mode: "group",
+    image: "/images/nintendo-switch-2.webp",
     link: "https://www.power.no/gaming/nintendo/nintendo-konsoll/nintendo-switch-2-spillkonsoll/p-4089807/",
   },
   {
@@ -50,6 +51,50 @@ export const gifts: Gift[] = [
     tags: ["Edvin", "Bøker"],
     priceLabel: "Under 300 kr",
     mode: "single",
+  },
+  {
+    id: "kid-pop-up-benk",
+    title: "KID Pop-Up Benk",
+    description:
+      "Aktivitetsleke der dyr spretter opp når man trykker på knappene. Fra 12 måneder.",
+    tags: ["Edvin", "Leker"],
+    priceLabel: "Ca. 300 kr",
+    mode: "single",
+    image: "/images/kid-pop-up-benk.jpg",
+    link: "https://www.lekia.no/leketoy/babyleker/aktivitetsleker/barne-pengeboks-med-oppbevaring",
+  },
+  {
+    id: "brio-trekkleke-elg",
+    title: "BRIO Trekkleke Elg",
+    description:
+      "Trekkdyr i tre med svaierende horn som oppmuntrer til bevegelse. Fra 12 måneder.",
+    tags: ["Edvin", "Leker"],
+    priceLabel: "Ca. 400 kr",
+    mode: "single",
+    image: "/images/brio-trekkleke-elg.jpg",
+    link: "https://www.lekia.no/brio-elg-trekkeleke",
+  },
+  {
+    id: "trepuslespill-klokke",
+    title: "Trepuslespill med klokke",
+    description:
+      "Trepuslespill med 12 fargerike brikker og bevegelige visere. Fra 12 måneder.",
+    tags: ["Edvin", "Leker"],
+    priceLabel: "Ca. 130 kr",
+    mode: "single",
+    image: "/images/trepuslespill-klokke.jpg",
+    link: "https://www.extra-leker.no/trepuslespill-12-brikker-klokke",
+  },
+  {
+    id: "smartrike-mini-ride-bla",
+    title: "SmarTrike 3-i-1 Xtend Mini-Ride, blå",
+    description:
+      "Sitte-leke som kan bygges om til sparkesykkel og vokser med barnet. Fra 12 måneder.",
+    tags: ["Edvin", "Utelek"],
+    priceLabel: "Ca. 1 300 kr",
+    mode: "single",
+    image: "/images/smartrike-mini-ride-bla.png",
+    link: "https://www.extra-leker.no/smartrike-sparkesykkel-3-i-1-xtend-mini-ride-bla",
   },
   {
     id: "lego-4-pluss",
@@ -83,6 +128,7 @@ export const gifts: Gift[] = [
     tags: ["Jonas", "Lego", "Minecraft"],
     priceLabel: "Ca. 250–300 kr",
     mode: "single",
+    image: "/images/lego-minecraft-birokterens-hytte.jpg",
     link: "https://www.lego.com/nb-no/product/the-bee-cottage-21241",
   },
   {
@@ -93,6 +139,7 @@ export const gifts: Gift[] = [
     tags: ["Jonas", "Lego", "Minecraft"],
     priceLabel: "Ca. 400–480 kr",
     mode: "single",
+    image: "/images/lego-minecraft-ulveborgen.jpg",
     link: "https://www.lego.com/nb-no/product/the-wolf-stronghold-21261",
   },
   {
@@ -103,6 +150,7 @@ export const gifts: Gift[] = [
     tags: ["Jonas", "Lego", "Minecraft"],
     priceLabel: "Ca. 800–980 kr",
     mode: "single",
+    image: "/images/lego-minecraft-enderdrage.jpg",
     link: "https://www.lego.com/nb-no/product/the-ender-dragon-and-end-ship-21264",
   },
   {
@@ -123,6 +171,7 @@ export const gifts: Gift[] = [
     tags: ["Jonas", "Hot Wheels", "Bilbane"],
     priceLabel: "Ca. 580 kr",
     mode: "single",
+    image: "/images/hotwheels-f1-sprint-race-circuit.jpg",
     link: "https://www.extra-leker.no/leker/lekebiler-og-kjoretoy/bilbaner/hot-wheels-bilbane-racing-formula-1-sprint-race-circuit",
   },
   {
@@ -137,13 +186,14 @@ export const gifts: Gift[] = [
   },
   {
     id: "panduro-hobbysett-refill-basic",
-    title: "Panduro Hobbysett Refill Basic",
+    title: "Panduro Startsett for hobbyaktiviteter",
     description:
-      "Pipenrensere, glitter, paljetter, øyne og pomponger i tube – verdi ca. 350 kr.",
+      "Pastellfarget startsett med piperensere, pomponger, bevegelige øyne, maling, glitterlim, paljetter og perler.",
     tags: ["Sofie", "Kreativt"],
-    priceLabel: "Ca. 130 kr",
+    priceLabel: "Ca. 200 kr",
     mode: "single",
-    link: "https://panduro.com/nb-no/products/barn-junior/diy-kit/hobbyror/hobbysett-refill-basic-700151",
+    link: "https://panduro.com/nb-no/products/barn-junior/diy-kit/hobbybokser/startsett-for-hobbyaktiviteter-pastellfargede-hobbytilbehor-for-morsom-kreativitet%21-807254",
+    image: "/images/panduro-startsett-hobbyaktiviteter.webp",
   },
   {
     id: "panduro-tusjer-magic",
@@ -153,17 +203,19 @@ export const gifts: Gift[] = [
     tags: ["Sofie", "Kreativt"],
     priceLabel: "Ca. 90 kr",
     mode: "single",
-    link: "https://panduro.com/nb-no/products/barn-junior/mal-tegn/fargeblyanter-kritt/tusjer-panduro-magic-10-stk-805004",
+    link: "https://panduro.com/nb-no/products/barn-junior/mal-tegn/barneblyanter/tusjer-panduro-magic-10-stk-805004",
+    image: "/images/panduro-tusjer-magic.webp",
   },
   {
     id: "panduro-hama-midi-havdyr",
-    title: "Panduro Hama midi 2500, Havdyr",
+    title: "Panduro Rørperler Midi kit Ocean Life",
     description:
-      "2500 rørperler, perlebrett (15x15 cm), strykepapir og mønster. Fra 5 år.",
+      "2000 Midi-perler, fem havdyr-perleplater, strykepapir og mønster. Fra 5 år.",
     tags: ["Sofie", "Kreativt"],
-    priceLabel: "Ca. 140 kr",
+    priceLabel: "Ca. 150 kr",
     mode: "single",
-    link: "https://panduro.com/nb-no/products/barn-junior/hama-perler/sett/hama-midi-2500-havdyr-802399",
+    link: "https://panduro.com/nb-no/products/barn-junior/roerperler/roerperler-midi/rorperler-midi-kit-dypt-under-havoverflaten-2000-perler-med-diameter-5-mm-og-5-perleplater-807222",
+    image: "/images/panduro-rorperler-havdyr.webp",
   },
   {
     id: "lego-sofie",
