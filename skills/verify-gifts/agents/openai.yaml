@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify wishlist gifts"
+  short_description: "Audit wishlist gifts against catalog rules"
+  default_prompt: "Use $verify-gifts to audit the current wishlist and report any issues."

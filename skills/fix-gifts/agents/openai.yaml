@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix wishlist gifts"
+  short_description: "Complete missing wishlist gift information"
+  default_prompt: "Use $fix-gifts to resolve missing information in the wishlist gifts."

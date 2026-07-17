@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add wishlist gifts"
+  short_description: "Add gifts safely to the shared wishlist"
+  default_prompt: "Use $add-gifts to add these gifts to the wishlist: ..."
