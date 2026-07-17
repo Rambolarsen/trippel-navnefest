@@ -32,5 +32,11 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "wrangler": "^4.110.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true,
+    "sharp@0.34.5": true,
+    "sharp@0.35.3": true,
+    "workerd@1.20260708.1": true
   }
 }
