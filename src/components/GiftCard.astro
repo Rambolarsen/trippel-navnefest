@@ -36,6 +36,13 @@ const { gift } = Astro.props;
       ))}
     </ul>
     {gift.priceLabel && <p class="gift-price muted">{gift.priceLabel}</p>}
+    {
+      gift.link && (
+        <a class="gift-link" href={gift.link} target="_blank" rel="noopener noreferrer">
+          Se gave ↗
+        </a>
+      )
+    }
     <GiftReservationButton client:load giftId={gift.id} mode={gift.mode} />
   </div>
 </article>
@@ -94,6 +101,12 @@ const { gift } = Astro.props;
   .gift-price {
     margin: 0.25rem 0 0;
     font-size: 0.9rem;
+  }
+
+  .gift-link {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    color: var(--color-accent);
   }
 </style>
 
