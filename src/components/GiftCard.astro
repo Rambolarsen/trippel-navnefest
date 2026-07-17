@@ -117,6 +117,23 @@ const { gift } = Astro.props;
     color: #9b2c13;
   }
 
+  .reservation-recovery-code {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-block: 0.5rem;
+    padding: 0.75rem;
+    background: #fff7d6;
+    border: 1px solid #c88a00;
+    border-radius: var(--radius);
+  }
+
+  .reservation-recovery-code code {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
   /* Spleisedetaljer (MVP.md §8): deltakerliste og navneskjema */
   .reservation-status .reservation-participants {
     font-weight: 400;

@@ -27,6 +27,7 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
   const status: GiftStatusEntry | undefined = statuses[giftId];
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   // Spleis krever navn (MVP.md §8): mangler det, spør vi her i kortet.
   // Skjemaet brukes også til å endre navn når man allerede er påmeldt.
   const [askName, setAskName] = useState(false);
@@ -89,7 +90,11 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
       // Kun 2xx og 409 bærer en status-body; andre feilsvar er bare
       // { error } og skal ikke inn i storen.
       if (response.ok || response.status === 409) {
-        const body = (await response.json()) as GiftStatusEntry & { giftId: string };
+        const body = (await response.json()) as GiftStatusEntry & {
+          giftId: string;
+          recoveryCode?: string;
+        };
+        if (body.recoveryCode) setRecoveryCode(body.recoveryCode);
         $giftStatus.setKey(giftId, {
           mode: body.mode,
           reservationCount: body.reservationCount,
@@ -174,6 +179,13 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
           </p>
         )}
         {error && <p className="reservation-error">{error}</p>}
+        {recoveryCode && (
+          <div className="reservation-recovery-code" role="alert">
+            <strong>Lagre gjenopprettingskoden din:</strong>
+            <code>{recoveryCode}</code>
+            <span>Du trenger den hvis du bytter enhet eller sletter nettleserdata.</span>
+          </div>
+        )}
       </div>
       {askName ? (
         <form className="reservation-name-form" onSubmit={submitName}>

@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import GiftCard from "../components/GiftCard.astro";
 import GiftFilters from "../components/GiftFilters.tsx";
 import NameForm from "../components/NameForm.tsx";
+import ReservationRecovery from "../components/ReservationRecovery.tsx";
 import { gifts } from "../data/gifts";
 
 // Sorter høyt prioriterte gaver først
@@ -21,6 +22,7 @@ const sortedGifts = [...gifts].sort(
 
     {/* client:only: navnet leses fra localStorage og finnes ikke ved SSR */}
     <NameForm client:only="react" />
+    <ReservationRecovery client:load />
 
     <GiftFilters client:load />
 
@@ -117,5 +119,36 @@ const sortedGifts = [...gifts].sort(
   .name-form-status {
     margin: 0;
     font-size: 0.9rem;
+  }
+
+  .reservation-recovery {
+    margin-block: 1rem;
+  }
+
+  .reservation-recovery summary {
+    cursor: pointer;
+    color: var(--color-text-muted);
+  }
+
+  .reservation-recovery form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-block-start: 0.75rem;
+  }
+
+  .reservation-recovery-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .reservation-recovery input {
+    width: min(100%, 24rem);
+  }
+
+  .reservation-recovery-message {
+    margin: 0;
   }
 </style>

@@ -258,6 +258,12 @@ Det skal ikke lagres:
 - navn (unntak: frivillig oppgitt visningsnavn ved spleiseinteresse, se §8)
 - e-postadresse
 - telefonnummer
+
+Hver nettleseridentitet får ved første reservasjonsforsøk en tilfeldig,
+lesbar gjenopprettingskode. Gjesten kan skrive ned koden og bruke den for
+å gjenopprette egne reservasjoner på en ny enhet eller etter sletting av
+nettleserdata. Selve koden lagres aldri i databasen; kun SHA-256-hashen
+brukes som reservasjonsidentitet.
 - IP-adresse som del av reservasjonsdata
 - andre identifiserende opplysninger
 
