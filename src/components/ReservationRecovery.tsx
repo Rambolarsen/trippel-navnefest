@@ -48,7 +48,7 @@ export default function ReservationRecovery() {
             id="recovery-code"
             value={recoveryCode}
             onChange={(event) => setRecoveryCode(event.target.value)}
-            placeholder="ABCDE-FGHIJ-KLMNP-QRSTV"
+            placeholder="ABCDE-FGHJK-MNPQR-STVWX"
             autoComplete="off"
             autoCapitalize="characters"
             required

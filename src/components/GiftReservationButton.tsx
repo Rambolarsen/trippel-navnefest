@@ -180,7 +180,7 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
         )}
         {error && <p className="reservation-error">{error}</p>}
         {recoveryCode && (
-          <div className="reservation-recovery-code" role="alert">
+          <div className="reservation-recovery-code">
             <strong>Lagre gjenopprettingskoden din:</strong>
             <code>{recoveryCode}</code>
             <span>Du trenger den hvis du bytter enhet eller sletter nettleserdata.</span>

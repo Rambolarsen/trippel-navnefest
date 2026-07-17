@@ -15,6 +15,7 @@ import {
   reserveSingleGift,
   restoreReservationToken,
 } from "../src/lib/reservations";
+import { hmacSign, toBase64Url } from "../src/lib/crypto";
 import { fakeCookies } from "./helpers";
 
 const db = env.DB;
@@ -42,6 +43,16 @@ describe("reservasjonstoken (MVP.md §9)", () => {
     expect(await getReservationTokenHash(cookies)).toBeNull();
   });
 
+  it("gir eksisterende UUID-token som gjenopprettingskode", async () => {
+    const legacyToken = "123e4567-e89b-12d3-a456-426614174000";
+    const signature = toBase64Url(await hmacSign("test-reservation-secret", legacyToken));
+    const cookies = fakeCookies({ reservasjon: `${legacyToken}.${signature}` });
+
+    const { tokenHash, recoveryCode } = await getOrCreateReservationToken(cookies);
+    expect(recoveryCode).toBe(legacyToken);
+    expect(await restoreReservationToken(fakeCookies(), recoveryCode)).toBe(tokenHash);
+  });
+
   it("gjenoppretter samme token fra en kode, uavhengig av store bokstaver og bindestreker", async () => {
     const original = fakeCookies();
     const { tokenHash, recoveryCode } = await getOrCreateReservationToken(original);
@@ -55,6 +66,9 @@ describe("reservasjonstoken (MVP.md §9)", () => {
   it("avviser ugyldige gjenopprettingskoder", () => {
     expect(normalizeRecoveryCode("ikke-en-kode")).toBeNull();
     expect(normalizeRecoveryCode("ABCDE-ABCDE-ABCDE-ABCDE")).not.toBeNull();
+    expect(normalizeRecoveryCode("123e4567-e89b-12d3-a456-426614174000")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    );
   });
 });
 

@@ -22,6 +22,7 @@ export const RESERVATION_COOKIE = "reservasjon";
 const RESERVATION_TOKEN_TTL_SECONDS = 90 * 24 * 60 * 60;
 const RECOVERY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ234567890";
 const RECOVERY_CODE_LENGTH = 20;
+const LEGACY_TOKEN_PATTERN = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 function getReservationSecret(): string {
   const secret = env.RESERVATION_SECRET;
@@ -41,7 +42,14 @@ export function createRecoveryCode(): string {
 
 export function normalizeRecoveryCode(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const compact = value.toUpperCase().replace(/[\s-]/g, "");
+  const trimmed = value.trim();
+
+  // Reservasjoner opprettet før gjenopprettingskoder brukte UUID som token.
+  // UUID-en kan fortsatt brukes som gjenopprettingskode, slik at den gamle
+  // identiteten ikke går tapt ved overgangen.
+  if (LEGACY_TOKEN_PATTERN.test(trimmed)) return trimmed.toLowerCase();
+
+  const compact = trimmed.toUpperCase().replace(/[\s-]/g, "");
   if (
     compact.length !== RECOVERY_CODE_LENGTH ||
     !new RegExp(`^[${RECOVERY_ALPHABET}]+$`).test(compact)
@@ -63,11 +71,7 @@ function setReservationToken(cookies: AstroCookies, token: string): Promise<void
   });
 }
 
-// Returnerer hashen av gjestens reservasjonstoken, eller null dersom
-// cookien mangler eller signaturen ikke stemmer.
-export async function getReservationTokenHash(
-  cookies: AstroCookies,
-): Promise<string | null> {
+async function getReservationToken(cookies: AstroCookies): Promise<string | null> {
   const raw = cookies.get(RESERVATION_COOKIE)?.value;
   if (!raw) return null;
 
@@ -77,9 +81,16 @@ export async function getReservationTokenHash(
   const signature = raw.slice(sigIndex + 1);
 
   const expected = toBase64Url(await hmacSign(getReservationSecret(), token));
-  if (!timingSafeEqual(encodeText(signature), encodeText(expected))) return null;
+  return timingSafeEqual(encodeText(signature), encodeText(expected)) ? token : null;
+}
 
-  return sha256Hex(token);
+// Returnerer hashen av gjestens reservasjonstoken, eller null dersom
+// cookien mangler eller signaturen ikke stemmer.
+export async function getReservationTokenHash(
+  cookies: AstroCookies,
+): Promise<string | null> {
+  const token = await getReservationToken(cookies);
+  return token ? sha256Hex(token) : null;
 }
 
 // Gjenbruker gyldig token fra cookien, ellers utstedes et nytt
@@ -88,8 +99,13 @@ export async function getReservationTokenHash(
 export async function getOrCreateReservationToken(
   cookies: AstroCookies,
 ): Promise<{ tokenHash: string; recoveryCode?: string }> {
-  const existing = await getReservationTokenHash(cookies);
-  if (existing) return { tokenHash: existing };
+  const existingToken = await getReservationToken(cookies);
+  if (existingToken) {
+    return {
+      tokenHash: await sha256Hex(existingToken),
+      ...(LEGACY_TOKEN_PATTERN.test(existingToken) && { recoveryCode: existingToken }),
+    };
+  }
 
   const recoveryCode = createRecoveryCode();
   await setReservationToken(cookies, recoveryCode);
