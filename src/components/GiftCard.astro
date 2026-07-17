@@ -60,8 +60,10 @@ const { gift } = Astro.props;
 
   .gift-image {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: clamp(9rem, 24vw, 12rem);
+    display: block;
     object-fit: cover;
+    flex: none;
   }
 
   .gift-image-placeholder {
