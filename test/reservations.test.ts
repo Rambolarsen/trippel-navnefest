@@ -8,11 +8,14 @@ import {
   getGiftIdsReservedBy,
   getGiftReservationStatus,
   getGroupParticipants,
-  getOrCreateReservationTokenHash,
+  getOrCreateReservationToken,
   getReservationTokenHash,
   normalizeDisplayName,
+  normalizeRecoveryCode,
   reserveSingleGift,
+  restoreReservationToken,
 } from "../src/lib/reservations";
+import { hmacSign, toBase64Url } from "../src/lib/crypto";
 import { fakeCookies } from "./helpers";
 
 const db = env.DB;
@@ -24,19 +27,48 @@ beforeEach(async () => {
 describe("reservasjonstoken (MVP.md §9)", () => {
   it("utsteder token og gjenkjenner det etterpå", async () => {
     const cookies = fakeCookies();
-    const hash = await getOrCreateReservationTokenHash(cookies);
+    const { tokenHash: hash, recoveryCode } = await getOrCreateReservationToken(cookies);
     expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(recoveryCode).toMatch(/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){3}$/);
     expect(await getReservationTokenHash(cookies)).toBe(hash);
     // Idempotent: samme cookie gir samme hash
-    expect(await getOrCreateReservationTokenHash(cookies)).toBe(hash);
+    expect(await getOrCreateReservationToken(cookies)).toEqual({ tokenHash: hash });
   });
 
   it("avviser token med tuklet signatur", async () => {
     const cookies = fakeCookies();
-    await getOrCreateReservationTokenHash(cookies);
+    await getOrCreateReservationToken(cookies);
     const raw = cookies.raw.get("reservasjon")!;
     cookies.raw.set("reservasjon", raw.slice(0, -2) + "xx");
     expect(await getReservationTokenHash(cookies)).toBeNull();
+  });
+
+  it("gir eksisterende UUID-token som gjenopprettingskode", async () => {
+    const legacyToken = "123e4567-e89b-12d3-a456-426614174000";
+    const signature = toBase64Url(await hmacSign("test-reservation-secret", legacyToken));
+    const cookies = fakeCookies({ reservasjon: `${legacyToken}.${signature}` });
+
+    const { tokenHash, recoveryCode } = await getOrCreateReservationToken(cookies);
+    expect(recoveryCode).toBe(legacyToken);
+    expect(await restoreReservationToken(fakeCookies(), recoveryCode)).toBe(tokenHash);
+  });
+
+  it("gjenoppretter samme token fra en kode, uavhengig av store bokstaver og bindestreker", async () => {
+    const original = fakeCookies();
+    const { tokenHash, recoveryCode } = await getOrCreateReservationToken(original);
+    const restored = fakeCookies();
+    expect(await restoreReservationToken(restored, recoveryCode!.toLowerCase().replaceAll("-", " "))).toBe(
+      tokenHash,
+    );
+    expect(await getReservationTokenHash(restored)).toBe(tokenHash);
+  });
+
+  it("avviser ugyldige gjenopprettingskoder", () => {
+    expect(normalizeRecoveryCode("ikke-en-kode")).toBeNull();
+    expect(normalizeRecoveryCode("ABCDE-ABCDE-ABCDE-ABCDE")).not.toBeNull();
+    expect(normalizeRecoveryCode("123e4567-e89b-12d3-a456-426614174000")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    );
   });
 });
 

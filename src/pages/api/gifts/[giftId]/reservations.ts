@@ -5,7 +5,7 @@ import {
   addGroupInterest,
   getGiftReservationStatus,
   getGroupParticipants,
-  getOrCreateReservationTokenHash,
+  getOrCreateReservationToken,
   normalizeDisplayName,
   reserveSingleGift,
 } from "../../../../lib/reservations";
@@ -37,7 +37,14 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
   }
 
   const db = getDb();
-  const tokenHash = await getOrCreateReservationTokenHash(cookies);
+  // Valider navn før vi eventuelt utsteder en ny gjenopprettingskode.
+  // Da kan ikke et manglende navn "forbruke" den eneste visningen av koden.
+  const displayName = gift.mode === "group" ? await readDisplayName(request) : null;
+  if (gift.mode === "group" && !displayName) {
+    return Response.json({ error: "Navn er påkrevd for spleis" }, { status: 400 });
+  }
+
+  const { tokenHash, recoveryCode } = await getOrCreateReservationToken(cookies);
 
   let result;
   if (gift.mode === "single") {
@@ -45,15 +52,16 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
   } else {
     // Navn er påkrevd for spleis (MVP.md §8), slik at deltakerne
     // kan finne hverandre og koordinere.
-    const displayName = await readDisplayName(request);
-    if (!displayName) {
-      return Response.json({ error: "Navn er påkrevd for spleis" }, { status: 400 });
-    }
-    result = await addGroupInterest(db, gift.id, tokenHash, displayName);
+    result = await addGroupInterest(db, gift.id, tokenHash, displayName!);
   }
 
   const status = await getGiftReservationStatus(db, gift.id, tokenHash);
-  const body: Record<string, unknown> = { giftId: gift.id, mode: gift.mode, ...status };
+  const body: Record<string, unknown> = {
+    giftId: gift.id,
+    mode: gift.mode,
+    ...status,
+    ...(recoveryCode && { recoveryCode }),
+  };
 
   // Gjesten er nå selv deltaker og får se hvem de spleiser med.
   if (gift.mode === "group" && status.reservedByCurrentVisitor) {
