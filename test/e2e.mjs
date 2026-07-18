@@ -118,15 +118,15 @@ async function run() {
   res = await INVITED("/onskeliste");
   check("inviterte gjester får tilgang til ønskelisten", res.status === 200, `(${res.status})`);
 
-  for (const gift of ["duplo", "nintendo-switch-2"]) {
+  for (const gift of ["kid-pop-up-benk", "nintendo-switch-2"]) {
     await ADMIN(`/api/admin/gifts/${gift}/reservations`, { method: "DELETE" });
   }
 
-  res = await A("/api/gifts/duplo/reservations", { method: "POST" });
+  res = await A("/api/gifts/kid-pop-up-benk/reservations", { method: "POST" });
   body = await res.json();
   check("A reserverer enkeltgave (201)", res.status === 201 && body.reservationCount === 1);
 
-  res = await B("/api/gifts/duplo/reservations", { method: "POST" });
+  res = await B("/api/gifts/kid-pop-up-benk/reservations", { method: "POST" });
   body = await res.json();
   check(
     "B avvises med 409 og ser korrekt status",
@@ -137,7 +137,8 @@ async function run() {
   body = await res.json();
   check(
     "status viser A sin reservasjon",
-    body["duplo"].reservationCount === 1 && body["duplo"].reservedByCurrentVisitor,
+    body["kid-pop-up-benk"].reservationCount === 1 &&
+      body["kid-pop-up-benk"].reservedByCurrentVisitor,
   );
 
   console.log("Spleisegave:");
@@ -194,11 +195,11 @@ async function run() {
       JSON.stringify(body.participants) === '["Anna og Per","Ole"]',
   );
 
-  res = await B("/api/gifts/duplo/reservations/mine", { method: "DELETE" });
+  res = await B("/api/gifts/kid-pop-up-benk/reservations/mine", { method: "DELETE" });
   body = await res.json();
   check("B kan ikke slette A sin reservasjon", body.reservationCount === 1);
 
-  res = await A("/api/gifts/duplo/reservations/mine", { method: "DELETE" });
+  res = await A("/api/gifts/kid-pop-up-benk/reservations/mine", { method: "DELETE" });
   body = await res.json();
   check("A angrer egen reservasjon", body.reservationCount === 0);
 
@@ -213,7 +214,7 @@ async function run() {
   body = await res.json();
   check("gaven er ledig igjen", body["nintendo-switch-2"].reservationCount === 0);
 
-  res = await B("/api/admin/gifts/duplo/reservations", { method: "DELETE" });
+  res = await B("/api/admin/gifts/kid-pop-up-benk/reservations", { method: "DELETE" });
   check("gjestesesjon får 401 på admin-API", res.status === 401, `(${res.status})`);
 
   console.log("Utlogging:");
