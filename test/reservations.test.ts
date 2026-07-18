@@ -7,6 +7,7 @@ import {
   deleteMyReservation,
   getGiftIdsReservedBy,
   getGiftReservationStatus,
+  getCurrentRecoveryCode,
   getGroupParticipants,
   getOrCreateReservationToken,
   getReservationTokenHash,
@@ -15,6 +16,7 @@ import {
   reserveSingleGift,
   restoreReservationToken,
 } from "../src/lib/reservations";
+import { hmacSign, sha256Hex, toBase64Url } from "../src/lib/crypto";
 import { fakeCookies } from "./helpers";
 
 const db = env.DB;
@@ -59,6 +61,16 @@ describe("reservasjonstoken (MVP.md §9)", () => {
     expect(normalizeRecoveryCode("ikke-en-kode")).toBeNull();
     expect(normalizeRecoveryCode("ABCDE-ABCDE-ABCDE-ABCDE")).not.toBeNull();
     expect(normalizeRecoveryCode("123e4567-e89b-12d3-a456-426614174000")).toBeNull();
+  });
+
+  it("erstatter en eldre UUID-cookie med en lesbar kode", async () => {
+    const legacyToken = "123e4567-e89b-12d3-a456-426614174000";
+    const signature = toBase64Url(await hmacSign("test-reservation-secret", legacyToken));
+    const cookies = fakeCookies({ reservasjon: `${legacyToken}.${signature}` });
+
+    const recoveryCode = await getCurrentRecoveryCode(cookies);
+    expect(recoveryCode).toMatch(/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){3}$/);
+    expect(await getReservationTokenHash(cookies)).not.toBe(await sha256Hex(legacyToken));
   });
 });
 

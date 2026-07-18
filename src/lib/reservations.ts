@@ -109,7 +109,17 @@ export async function getOrCreateReservationToken(
 // kan vises ett fast sted øverst i ønskelisten.
 export async function getCurrentRecoveryCode(cookies: AstroCookies): Promise<string | null> {
   const token = await getReservationToken(cookies);
-  return token ? normalizeRecoveryCode(token) : null;
+  if (!token) return null;
+
+  const recoveryCode = normalizeRecoveryCode(token);
+  if (recoveryCode) return recoveryCode;
+
+  // UUID-token fra før overgangen skal ikke fortsette å vises som en
+  // gjenopprettingskode. Vi roterer dem ved neste besøk; reservasjoner med
+  // det gamle tokenet er bevisst ikke kompatible med den nye ordningen.
+  const replacementCode = createRecoveryCode();
+  await setReservationToken(cookies, replacementCode);
+  return replacementCode;
 }
 
 // API-laget må i tillegg sjekke at hashen faktisk har reservasjoner før
