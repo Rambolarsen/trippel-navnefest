@@ -2,7 +2,7 @@ import { defineMiddleware } from "astro:middleware";
 import { hasValidAdminSession, hasValidGuestSession } from "./lib/auth";
 
 // Tilgangsregler (MVP.md §5, §6):
-// - /, /api/login: åpne
+// - /, /api/login og /invitasjon/<token>: åpne
 // - /admin, /api/admin/login: egen admin-flyt, krever ikke gjestesesjon
 //   (siden viser selv innloggingsskjema uten gyldig adminsesjon)
 // - øvrige /api/admin/*: krever gyldig adminsesjon
@@ -37,7 +37,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   } else if (path === "/" && (await hasValidGuestSession(context.cookies))) {
     // Gyldig sesjon: rett til ønskelisten (MVP.md §5, «Senere besøk»)
     response = context.redirect("/onskeliste");
-  } else if (!PUBLIC_PATHS.has(path) && !(await hasValidGuestSession(context.cookies))) {
+  } else if (
+    !PUBLIC_PATHS.has(path) &&
+    !path.startsWith("/invitasjon/") &&
+    !(await hasValidGuestSession(context.cookies))
+  ) {
     response = path.startsWith("/api/")
       ? Response.json({ error: "Ikke innlogget" }, { status: 401 })
       : context.redirect("/");

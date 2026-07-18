@@ -4,12 +4,14 @@ import GiftCard from "../components/GiftCard.astro";
 import GiftFilters from "../components/GiftFilters.tsx";
 import NameForm from "../components/NameForm.tsx";
 import ReservationRecovery from "../components/ReservationRecovery.tsx";
+import { getCurrentRecoveryCode } from "../lib/reservations";
 import { gifts } from "../data/gifts";
 
 // Sorter høyt prioriterte gaver først
 const sortedGifts = [...gifts].sort(
   (a, b) => (b.priority === "high" ? 1 : 0) - (a.priority === "high" ? 1 : 0),
 );
+const recoveryCode = await getCurrentRecoveryCode(Astro.cookies);
 ---
 
 <BaseLayout title="Ønskeliste – navnefest for Edvin, Jonas og Sofie">
@@ -22,7 +24,7 @@ const sortedGifts = [...gifts].sort(
 
     {/* client:only: navnet leses fra localStorage og finnes ikke ved SSR */}
     <NameForm client:only="react" />
-    <ReservationRecovery client:load />
+    <ReservationRecovery client:load initialRecoveryCode={recoveryCode} />
 
     <GiftFilters client:load />
 
@@ -123,6 +125,23 @@ const sortedGifts = [...gifts].sort(
 
   .reservation-recovery {
     margin-block: 1rem;
+  }
+
+  .reservation-recovery-code {
+    padding: 0.75rem 1rem;
+    background: #fff7d6;
+    border: 1px solid #c88a00;
+    border-radius: var(--radius);
+  }
+
+  .reservation-recovery-code p {
+    margin: 0.25rem 0;
+  }
+
+  .reservation-recovery-code code {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
   }
 
   .reservation-recovery summary {

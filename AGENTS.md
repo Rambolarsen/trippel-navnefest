@@ -28,7 +28,7 @@ Local setup: `cp .env.example .dev.vars` and fill in the four secrets before `np
 ## Architecture
 
 **Two independent auth flows**, both stateless HMAC-signed cookies (no server-side session storage), enforced centrally in [src/middleware.ts](src/middleware.ts):
-- **Guest**: shared `GUEST_PASSPHRASE` → `session` cookie → gates everything except `/` and `/api/login`.
+- **Guest**: shared `GUEST_PASSPHRASE` or an admin-created invitation link → `session` cookie → gates everything except `/`, `/api/login`, and `/invitasjon/<token>`. The invitation token is stored only as a D1 hash and a new link revokes the old one.
 - **Admin**: separate `ADMIN_PASSPHRASE` → `admin_session` cookie → gates everything under `/api/admin/*` except `/api/admin/login`. Completely separate secret and cookie from guest; a guest session cannot be reused as an admin session because the role is baked into the signed payload.
 
 Session token format: `<role>.<expiry-ms>.<base64url(HMAC-SHA256(payload))>`, implemented in [src/lib/auth.ts](src/lib/auth.ts). Passphrase comparisons and signature checks are constant-time via SHA-256 digest comparison in [src/lib/crypto.ts](src/lib/crypto.ts) — reuse those helpers (`constantTimeStringEqual`, `timingSafeEqual`) rather than `===` for any secret comparison.

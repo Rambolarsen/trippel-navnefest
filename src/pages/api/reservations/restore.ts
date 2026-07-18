@@ -50,5 +50,5 @@ export const POST: APIRoute = async (context) => {
   }
 
   await restoreReservationToken(context.cookies, recoveryCode);
-  return Response.json({ restored: true });
+  return Response.json({ restored: true, recoveryCode });
 };

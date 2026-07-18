@@ -27,7 +27,10 @@ const SESSION_TTL_SECONDS: Record<Role, number> = {
 };
 
 function getSecret(
-  name: "GUEST_PASSPHRASE" | "ADMIN_PASSPHRASE" | "SESSION_SECRET",
+  name:
+    | "GUEST_PASSPHRASE"
+    | "ADMIN_PASSPHRASE"
+    | "SESSION_SECRET",
 ): string {
   const value = env[name];
   if (!value) {

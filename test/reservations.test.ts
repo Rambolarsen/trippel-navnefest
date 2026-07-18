@@ -15,7 +15,6 @@ import {
   reserveSingleGift,
   restoreReservationToken,
 } from "../src/lib/reservations";
-import { hmacSign, toBase64Url } from "../src/lib/crypto";
 import { fakeCookies } from "./helpers";
 
 const db = env.DB;
@@ -32,7 +31,10 @@ describe("reservasjonstoken (MVP.md §9)", () => {
     expect(recoveryCode).toMatch(/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){3}$/);
     expect(await getReservationTokenHash(cookies)).toBe(hash);
     // Idempotent: samme cookie gir samme hash
-    expect(await getOrCreateReservationToken(cookies)).toEqual({ tokenHash: hash });
+    expect(await getOrCreateReservationToken(cookies)).toEqual({
+      tokenHash: hash,
+      recoveryCode,
+    });
   });
 
   it("avviser token med tuklet signatur", async () => {
@@ -41,16 +43,6 @@ describe("reservasjonstoken (MVP.md §9)", () => {
     const raw = cookies.raw.get("reservasjon")!;
     cookies.raw.set("reservasjon", raw.slice(0, -2) + "xx");
     expect(await getReservationTokenHash(cookies)).toBeNull();
-  });
-
-  it("gir eksisterende UUID-token som gjenopprettingskode", async () => {
-    const legacyToken = "123e4567-e89b-12d3-a456-426614174000";
-    const signature = toBase64Url(await hmacSign("test-reservation-secret", legacyToken));
-    const cookies = fakeCookies({ reservasjon: `${legacyToken}.${signature}` });
-
-    const { tokenHash, recoveryCode } = await getOrCreateReservationToken(cookies);
-    expect(recoveryCode).toBe(legacyToken);
-    expect(await restoreReservationToken(fakeCookies(), recoveryCode)).toBe(tokenHash);
   });
 
   it("gjenoppretter samme token fra en kode, uavhengig av store bokstaver og bindestreker", async () => {
@@ -66,9 +58,7 @@ describe("reservasjonstoken (MVP.md §9)", () => {
   it("avviser ugyldige gjenopprettingskoder", () => {
     expect(normalizeRecoveryCode("ikke-en-kode")).toBeNull();
     expect(normalizeRecoveryCode("ABCDE-ABCDE-ABCDE-ABCDE")).not.toBeNull();
-    expect(normalizeRecoveryCode("123e4567-e89b-12d3-a456-426614174000")).toBe(
-      "123e4567-e89b-12d3-a456-426614174000",
-    );
+    expect(normalizeRecoveryCode("123e4567-e89b-12d3-a456-426614174000")).toBeNull();
   });
 });
 

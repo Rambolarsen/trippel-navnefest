@@ -26,6 +26,7 @@ describe("passphrase-validering (MVP.md §22)", () => {
     expect(await verifyAdminPassphrase("test-gjest-123")).toBe(false);
     expect(await verifyGuestPassphrase("test-admin-456")).toBe(false);
   });
+
 });
 
 describe("sesjoner (MVP.md §22)", () => {

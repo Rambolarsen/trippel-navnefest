@@ -36,22 +36,19 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
     return Response.json({ error: "Ukjent gave" }, { status: 404 });
   }
 
-  const db = getDb();
   // Valider navn før vi eventuelt utsteder en ny gjenopprettingskode.
-  // Da kan ikke et manglende navn "forbruke" den eneste visningen av koden.
   const displayName = gift.mode === "group" ? await readDisplayName(request) : null;
   if (gift.mode === "group" && !displayName) {
     return Response.json({ error: "Navn er påkrevd for spleis" }, { status: 400 });
   }
 
+  const db = getDb();
   const { tokenHash, recoveryCode } = await getOrCreateReservationToken(cookies);
 
   let result;
   if (gift.mode === "single") {
     result = await reserveSingleGift(db, gift.id, tokenHash);
   } else {
-    // Navn er påkrevd for spleis (MVP.md §8), slik at deltakerne
-    // kan finne hverandre og koordinere.
     result = await addGroupInterest(db, gift.id, tokenHash, displayName!);
   }
 

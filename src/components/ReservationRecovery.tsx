@@ -1,10 +1,21 @@
-import { useState } from "react";
+import { useStore } from "@nanostores/react";
+import { useEffect, useState } from "react";
 import { refreshGiftStatus } from "../stores/giftStatus";
+import { $recoveryCode, setRecoveryCode } from "../stores/recoveryCode";
 
-export default function ReservationRecovery() {
-  const [recoveryCode, setRecoveryCode] = useState("");
+type Props = {
+  initialRecoveryCode: string | null;
+};
+
+export default function ReservationRecovery({ initialRecoveryCode }: Props) {
+  const activeRecoveryCode = useStore($recoveryCode);
+  const [recoveryCode, setRecoveryCodeInput] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (initialRecoveryCode) setRecoveryCode(initialRecoveryCode);
+  }, [initialRecoveryCode]);
 
   async function restore(event: React.FormEvent) {
     event.preventDefault();
@@ -28,9 +39,11 @@ export default function ReservationRecovery() {
         );
         return;
       }
+      const body = (await response.json()) as { recoveryCode: string };
+      setRecoveryCode(body.recoveryCode);
       await refreshGiftStatus();
       setMessage("Reservasjonene dine er gjenopprettet på denne enheten.");
-      setRecoveryCode("");
+      setRecoveryCodeInput("");
     } catch {
       setMessage("Noe gikk galt. Prøv gjerne igjen.");
     } finally {
@@ -39,26 +52,35 @@ export default function ReservationRecovery() {
   }
 
   return (
-    <details className="reservation-recovery">
-      <summary>Mistet du reservasjonene dine?</summary>
-      <form onSubmit={restore}>
-        <label htmlFor="recovery-code">Gjenopprettingskode</label>
-        <div className="reservation-recovery-row">
-          <input
-            id="recovery-code"
-            value={recoveryCode}
-            onChange={(event) => setRecoveryCode(event.target.value)}
-            placeholder="ABCDE-FGHJK-MNPQR-STVWX"
-            autoComplete="off"
-            autoCapitalize="characters"
-            required
-          />
-          <button type="submit" disabled={busy || !recoveryCode.trim()}>
-            Gjenopprett
-          </button>
+    <section className="reservation-recovery" aria-label="Gjenoppretting av reservasjoner">
+      {activeRecoveryCode && (
+        <div className="reservation-recovery-code">
+          <strong>Din gjenopprettingskode</strong>
+          <p><code>{activeRecoveryCode}</code></p>
+          <p className="muted">Lagre den et trygt sted. Den gjelder alle reservasjonene dine.</p>
         </div>
-        {message && <p className="reservation-recovery-message" aria-live="polite">{message}</p>}
-      </form>
-    </details>
+      )}
+      <details>
+        <summary>Mistet du reservasjonene dine?</summary>
+        <form onSubmit={restore}>
+          <label htmlFor="recovery-code">Gjenopprettingskode</label>
+          <div className="reservation-recovery-row">
+            <input
+              id="recovery-code"
+              value={recoveryCode}
+              onChange={(event) => setRecoveryCodeInput(event.target.value)}
+              placeholder="ABCDE-FGHJK-MNPQR-STVWX"
+              autoComplete="off"
+              autoCapitalize="characters"
+              required
+            />
+            <button type="submit" disabled={busy || !recoveryCode.trim()}>
+              Gjenopprett
+            </button>
+          </div>
+          {message && <p className="reservation-recovery-message" aria-live="polite">{message}</p>}
+        </form>
+      </details>
+    </section>
   );
 }

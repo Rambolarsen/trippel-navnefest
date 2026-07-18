@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { gifts } from "../data/gifts";
 import { hasValidAdminSession } from "../lib/auth";
 import { getDb } from "../lib/database";
+import { hasActiveInvitationToken } from "../lib/invitations";
 import { countReservationsByGift } from "../lib/reservations";
 
 const isAdmin = await hasValidAdminSession(Astro.cookies);
@@ -16,8 +17,10 @@ const errorMessage =
 
 // Kun tall vises – aldri hvem som har reservert (MVP.md §6).
 let rows: { id: string; title: string; mode: string; count: number }[] = [];
+let hasInvitationToken = false;
 if (isAdmin) {
   const counts = await countReservationsByGift(getDb());
+  hasInvitationToken = await hasActiveInvitationToken(getDb());
   rows = gifts.map((gift) => ({
     id: gift.id,
     title: gift.title,
@@ -57,6 +60,28 @@ if (isAdmin) {
             Antall reservasjoner og spleiseinteresser per gave. Hvem som har
             reservert, lagres ikke og kan ikke vises.
           </p>
+          <section class="invitation" aria-labelledby="invitation-heading">
+            <h2 id="invitation-heading">Invitasjonslenke</h2>
+            <p class="muted">
+              {hasInvitationToken
+                ? "En invitasjonslenke er aktiv. Når du lager en ny, kan den gamle ikke lenger brukes til å logge inn."
+                : "Lag en lenke som gir gjester tilgang uten å skrive inn passord."}
+            </p>
+            {hasInvitationToken && (
+              <p class="muted">
+                Gjester som allerede er innlogget, beholder sesjonen sin i opptil 30 dager.
+              </p>
+            )}
+            <button type="button" id="create-invitation">
+              {hasInvitationToken ? "Lag ny invitasjonslenke" : "Lag invitasjonslenke"}
+            </button>
+            <div id="invitation-result" hidden>
+              <p class="success">Kopier lenken nå. Den vises ikke igjen av sikkerhetshensyn.</p>
+              <input id="invitation-url" type="text" readonly aria-label="Invitasjonslenke" />
+              <button type="button" class="btn-secondary" id="copy-invitation">Kopier lenke</button>
+            </div>
+            <p id="invitation-error" class="error" role="alert" hidden></p>
+          </section>
           <ul class="admin-list" role="list">
             {rows.map((row) => (
               <li class="admin-row">
@@ -117,6 +142,34 @@ if (isAdmin) {
     gap: 0.5rem;
   }
 
+  .invitation {
+    margin-block: 1.5rem;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .invitation h2 {
+    margin-top: 0;
+  }
+
+  #invitation-result {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  #invitation-url {
+    max-width: none;
+  }
+
+  .success {
+    margin: 0;
+    color: #256d3d;
+    font-weight: 600;
+  }
+
   .admin-row {
     display: flex;
     align-items: center;
@@ -136,6 +189,48 @@ if (isAdmin) {
 </style>
 
 <script>
+  const createInvitationButton = document.querySelector<HTMLButtonElement>(
+    "#create-invitation",
+  );
+  const invitationResult = document.querySelector<HTMLElement>("#invitation-result");
+  const invitationUrl = document.querySelector<HTMLInputElement>("#invitation-url");
+  const copyInvitationButton = document.querySelector<HTMLButtonElement>("#copy-invitation");
+  const invitationError = document.querySelector<HTMLElement>("#invitation-error");
+
+  createInvitationButton?.addEventListener("click", async () => {
+    if (!confirm("Lage en ny invitasjonslenke? En eventuell tidligere lenke kan ikke brukes til å logge inn etterpå.")) {
+      return;
+    }
+
+    createInvitationButton.disabled = true;
+    invitationError!.hidden = true;
+    try {
+      const response = await fetch("/api/admin/invitation", { method: "POST" });
+      if (!response.ok) throw new Error(String(response.status));
+      const body = (await response.json()) as { invitationUrl: string };
+      invitationUrl!.value = body.invitationUrl;
+      invitationResult!.hidden = false;
+      createInvitationButton.textContent = "Lag ny invitasjonslenke";
+      invitationUrl!.select();
+    } catch {
+      invitationError!.textContent = "Kunne ikke lage invitasjonslenken. Prøv igjen.";
+      invitationError!.hidden = false;
+    } finally {
+      createInvitationButton.disabled = false;
+    }
+  });
+
+  copyInvitationButton?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(invitationUrl!.value);
+      copyInvitationButton.textContent = "Kopiert";
+    } catch {
+      invitationUrl!.select();
+      document.execCommand("copy");
+      copyInvitationButton.textContent = "Kopiert";
+    }
+  });
+
   // Nullstilling via DELETE-endepunktet (MVP.md §12), med bekreftelse.
   document.addEventListener("click", async (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>(

@@ -68,8 +68,9 @@ async function run() {
   const { guest, admin } = readSecrets();
   const A = browser();
   const B = browser();
-  const C = browser();
   const ADMIN = browser();
+  const INVITED = browser();
+  let body;
 
   console.log("Innlogging:");
   let res = await A("/onskeliste");
@@ -82,7 +83,7 @@ async function run() {
   });
   check("feil passphrase gir 401", res.status === 401, `(${res.status})`);
 
-  for (const [name, client] of [["A", A], ["B", B], ["C", C]]) {
+  for (const [name, client] of [["A", A], ["B", B]]) {
     res = await client("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,27 +104,27 @@ async function run() {
     body: JSON.stringify({ passphrase: admin }),
   });
   check("admin logger inn", res.status === 200, `(${res.status})`);
+
+  res = await ADMIN("/api/admin/invitation", { method: "POST" });
+  body = await res.json();
+  const invitationPath = new URL(body.invitationUrl).pathname;
+  check(
+    "admin oppretter invitasjonslenke",
+    res.status === 200 && invitationPath.startsWith("/invitasjon/"),
+    `(${res.status})`,
+  );
+  res = await INVITED(invitationPath);
+  check("invitasjonslenken oppretter gjestesesjon", res.status === 302, `(${res.status})`);
+  res = await INVITED("/onskeliste");
+  check("inviterte gjester får tilgang til ønskelisten", res.status === 200, `(${res.status})`);
+
   for (const gift of ["duplo", "nintendo-switch-2"]) {
     await ADMIN(`/api/admin/gifts/${gift}/reservations`, { method: "DELETE" });
   }
 
   res = await A("/api/gifts/duplo/reservations", { method: "POST" });
-  let body = await res.json();
-  const recoveryCode = body.recoveryCode;
-  check(
-    "A reserverer enkeltgave (201) og får gjenopprettingskode",
-    res.status === 201 && body.reservationCount === 1 && typeof recoveryCode === "string",
-  );
-
-  res = await C("/api/reservations/restore", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recoveryCode }),
-  });
-  check("C gjenoppretter A sine reservasjoner med koden", res.status === 200, `(${res.status})`);
-  res = await C("/api/gifts/status");
   body = await res.json();
-  check("gjenopprettet nettleser ser reservasjonen som sin", body.duplo.reservedByCurrentVisitor);
+  check("A reserverer enkeltgave (201)", res.status === 201 && body.reservationCount === 1);
 
   res = await B("/api/gifts/duplo/reservations", { method: "POST" });
   body = await res.json();

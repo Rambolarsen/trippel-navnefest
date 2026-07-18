@@ -26,7 +26,7 @@ MVP-en skal være liten nok til å utvikles og driftes enkelt, men robust nok ti
 
 Første versjon skal støtte:
 
-1. Felles passphrase for tilgang
+1. Felles passphrase eller gjenbrukbar invitasjonslenke for tilgang
 2. Signert innloggingssesjon
 3. Gaveliste med bilder, beskrivelser og tags
 4. Filtrering etter barn og gavetype
@@ -100,6 +100,15 @@ Alternative plattformer kan brukes så lenge de støtter:
 4. Serveren validerer passphrasen.
 5. Ved riktig passphrase opprettes en signert HttpOnly-cookie.
 6. Gjesten sendes videre til ønskelisten.
+
+### Invitasjonslenke
+
+En gjest kan også åpne `/invitasjon/<token>`. Et gyldig token oppretter den
+samme gjestesesjonen og sender gjesten videre til ønskelisten. Lenken utløper
+ikke som standard, men kan tilbakekalles for nye innlogginger fra adminsiden ved
+å lage en ny. Eksisterende gjestesesjoner varer fortsatt i opptil 30 dager.
+Tokenet er en hemmelighet, vises kun ved opprettelse og lagres kun som hash i
+databasen.
 
 ### Senere besøk
 
@@ -267,15 +276,18 @@ brukes som reservasjonsidentitet.
 - IP-adresse som del av reservasjonsdata
 - andre identifiserende opplysninger
 
-Når en gjest reserverer en gave, skal nettleseren få en tilfeldig reservasjonsidentifikator.
+Når en gjest reserverer en gave, skal nettleseren få en tilfeldig gjenopprettingskode.
 
-Denne skal brukes til å avgjøre om gjesten kan angre sin egen reservasjon.
+Den samme koden gjelder alle gjestens reservasjoner, vises ett fast sted øverst
+i ønskelisten og kan brukes til å gjenopprette dem på en ny enhet eller etter
+sletting av nettleserdata. Koden lagres aldri i databasen; kun SHA-256-hashen
+brukes som reservasjonsidentitet.
 
 Anbefalt løsning:
 
-- tilfeldig generert UUID eller kryptografisk token
+- kort, menneskelesbar kode med grupper av tegn som er enkle å skille
 - lagres i en signert cookie
-- tokenet lagres sammen med reservasjonen i databasen
+- kun SHA-256-hashen av koden lagres sammen med reservasjonen i databasen
 
 Andre gjester skal ikke kunne se tokenet.
 

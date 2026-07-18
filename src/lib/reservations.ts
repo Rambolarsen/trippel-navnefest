@@ -22,7 +22,6 @@ export const RESERVATION_COOKIE = "reservasjon";
 const RESERVATION_TOKEN_TTL_SECONDS = 90 * 24 * 60 * 60;
 const RECOVERY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ234567890";
 const RECOVERY_CODE_LENGTH = 20;
-const LEGACY_TOKEN_PATTERN = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 function getReservationSecret(): string {
   const secret = env.RESERVATION_SECRET;
@@ -42,14 +41,7 @@ export function createRecoveryCode(): string {
 
 export function normalizeRecoveryCode(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-
-  // Reservasjoner opprettet før gjenopprettingskoder brukte UUID som token.
-  // UUID-en kan fortsatt brukes som gjenopprettingskode, slik at den gamle
-  // identiteten ikke går tapt ved overgangen.
-  if (LEGACY_TOKEN_PATTERN.test(trimmed)) return trimmed.toLowerCase();
-
-  const compact = trimmed.toUpperCase().replace(/[\s-]/g, "");
+  const compact = value.trim().toUpperCase().replace(/[\s-]/g, "");
   if (
     compact.length !== RECOVERY_CODE_LENGTH ||
     !new RegExp(`^[${RECOVERY_ALPHABET}]+$`).test(compact)
@@ -100,16 +92,24 @@ export async function getOrCreateReservationToken(
   cookies: AstroCookies,
 ): Promise<{ tokenHash: string; recoveryCode?: string }> {
   const existingToken = await getReservationToken(cookies);
-  if (existingToken) {
+  const existingRecoveryCode = normalizeRecoveryCode(existingToken);
+  if (existingRecoveryCode) {
     return {
-      tokenHash: await sha256Hex(existingToken),
-      ...(LEGACY_TOKEN_PATTERN.test(existingToken) && { recoveryCode: existingToken }),
+      tokenHash: await sha256Hex(existingRecoveryCode),
+      recoveryCode: existingRecoveryCode,
     };
   }
 
   const recoveryCode = createRecoveryCode();
   await setReservationToken(cookies, recoveryCode);
   return { tokenHash: await sha256Hex(recoveryCode), recoveryCode };
+}
+
+// Returnerer den nåværende lesbare koden til innlogget gjest, slik at den
+// kan vises ett fast sted øverst i ønskelisten.
+export async function getCurrentRecoveryCode(cookies: AstroCookies): Promise<string | null> {
+  const token = await getReservationToken(cookies);
+  return token ? normalizeRecoveryCode(token) : null;
 }
 
 // API-laget må i tillegg sjekke at hashen faktisk har reservasjoner før

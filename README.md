@@ -68,6 +68,9 @@ vanlig kode.
    npx wrangler secret put RESERVATION_SECRET
    ```
 
+   Administrer invitasjonslenken fra adminsiden etter deploy. Lenken utløper
+   ikke og kan tilbakekalles ved å lage en ny der.
+
 4. **Deploy:**
 
    ```bash
