@@ -103,20 +103,15 @@ export const gifts: Gift[] = [
     link: "https://www.extra-leker.no/smartrike-sparkesykkel-3-i-1-xtend-mini-ride-bla",
   },
   {
-    id: "lego-4-pluss",
-    title: "Lego 4+",
-    description: "Lego-sett tilpasset de yngste byggerne.",
-    tags: ["Jonas", "Lego"],
-    priceLabel: "300–700 kr",
-    mode: "single",
-  },
-  {
     id: "magnetiske-byggeklosser",
-    title: "Magnetiske byggeklosser",
-    description: "Byggeklosser med magneter som gir uendelige muligheter.",
+    title: "Connetix Rainbow Starter Pack (60 deler)",
+    description:
+      "Magnetiske byggedeler i mange farger som kan brukes til å bygge former, hus og tårn.",
     tags: ["Jonas", "Byggeleker"],
     priceLabel: "500–1000 kr",
     mode: "single",
+    image: "/images/connetix-rainbow-starter-pack-60-deler.jpg",
+    link: "https://www.med24.no/mor-og-barn/leker/leketoey/connetix-starter-pack-magnetsett-60-deler-rainbow-1-stk",
   },
   {
     id: "ravensburger-junior-labyrint",
@@ -156,7 +151,7 @@ export const gifts: Gift[] = [
     title: "LEGO Minecraft – Enderdragen",
     description:
       "Sett 21595 med bevegelig Enderdrage og vingemekanisme. 710 deler, fra 10 år.",
-    tags: ["Jonas", "Lego", "Minecraft"],
+    tags: ["Jonas", "Sofie", "Fellesgave", "Lego", "Minecraft"],
     priceLabel: "849,90 kr",
     mode: "single",
     image: "/images/lego-minecraft-enderdrage.jpg",
@@ -227,14 +222,6 @@ export const gifts: Gift[] = [
     mode: "single",
     link: "https://panduro.com/nb-no/products/barn-junior/roerperler/roerperler-midi/rorperler-midi-kit-dypt-under-havoverflaten-2000-perler-med-diameter-5-mm-og-5-perleplater-807222",
     image: "/images/panduro-rorperler-havdyr.webp",
-  },
-  {
-    id: "lego-sofie",
-    title: "Lego",
-    description: "Lego-sett for en erfaren bygger på sju år.",
-    tags: ["Sofie", "Lego"],
-    priceLabel: "300–700 kr",
-    mode: "single",
   },
   {
     id: "kinoopplevelse-sofie",
