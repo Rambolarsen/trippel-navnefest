@@ -191,10 +191,10 @@ describe("normalizeDisplayName (MVP.md §8)", () => {
     expect(normalizeDisplayName(42)).toBeNull();
   });
 
-  it("fjerner kontrolltegn og kapper til 60 tegn", () => {
+  it("fjerner kontrolltegn og kapper til 20 tegn", () => {
     expect(normalizeDisplayName("An\tna\r\n")).toBe("Anna");
     const langt = "a".repeat(80);
-    expect(normalizeDisplayName(langt)).toHaveLength(60);
+    expect(normalizeDisplayName(langt)).toHaveLength(20);
   });
 });
 

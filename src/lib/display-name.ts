@@ -3,7 +3,7 @@
 // (src/stores/displayName.ts), slik at et navn aldri kan se gyldig
 // ut i nettleseren men avvises av serveren.
 
-export const MAX_DISPLAY_NAME_LENGTH = 60;
+export const MAX_DISPLAY_NAME_LENGTH = 20;
 
 // Fjerner kontrolltegn, trimmer og kapper til makslengden.
 // Tomt/ugyldig → null.

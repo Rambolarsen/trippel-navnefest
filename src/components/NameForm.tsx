@@ -27,7 +27,10 @@ export default function NameForm() {
   return (
     <form className="name-form" onSubmit={submit}>
       <label htmlFor="visningsnavn">
-        Navnet ditt <span className="muted">(vises kun for andre du spleiser med)</span>
+        Navnet ditt{" "}
+        <span className="muted">
+          (maks {MAX_DISPLAY_NAME_LENGTH} tegn, vises kun for andre du spleiser med)
+        </span>
       </label>
       <div className="name-form-row">
         <input

@@ -185,7 +185,7 @@ export default function GiftReservationButton({ giftId, mode }: Props) {
       {askName ? (
         <form className="reservation-name-form" onSubmit={submitName}>
           <label htmlFor={`spleisenavn-${giftId}`}>
-            Navnet ditt (vises for de andre på spleisen)
+            Navnet ditt (maks {MAX_DISPLAY_NAME_LENGTH} tegn, vises for de andre på spleisen)
           </label>
           <input
             id={`spleisenavn-${giftId}`}
