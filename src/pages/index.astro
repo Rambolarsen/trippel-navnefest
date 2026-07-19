@@ -16,74 +16,81 @@ const errorMessage =
       <div class="wordmark">Ønskeboks</div>
     </header>
 
-    <section class="hero">
-      <h1>Én delt ønskeliste, uansett anledning</h1>
-      <p>
-        Ønskeboks er en enkel, passordbeskyttet ønskeliste du kan sette opp
-        for bursdager, navnefester eller andre anledninger. Gjester
-        filtrerer på det som er relevant for dem, ser hva som fortsatt er
-        ledig, og reserverer anonymt — uten konto.
-      </p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="#finn-onskeliste">Lag din ønskeliste</a>
-        <details id="finn-onskeliste" class="reveal" open={errorMessage !== null}>
-          <summary class="btn btn-secondary">Finn ønskeliste</summary>
-          <div class="reveal-panel">
-            <p class="muted">
-              Skriv inn passordet fra invitasjonen for å åpne ønskelisten.
-            </p>
-            <form method="post" action="/api/login">
-              <label for="passphrase">Passord</label>
-              <input
-                type="password"
-                id="passphrase"
-                name="passphrase"
-                required
-                autocomplete="current-password"
-                autofocus={errorMessage !== null}
-              />
-              {
-                errorMessage && (
-                  <p class="error" role="alert">
-                    {errorMessage}
-                  </p>
-                )
-              }
-              <button type="submit" class="btn btn-primary">
-                Åpne ønskelisten
-              </button>
-            </form>
-          </div>
-        </details>
-      </div>
-    </section>
+    <main>
+      <section class="hero">
+        <h1>Én delt ønskeliste, uansett anledning</h1>
+        <p>
+          Ønskeboks er en enkel, passordbeskyttet ønskeliste du kan sette opp
+          for bursdager, navnefester eller andre anledninger. Gjester
+          filtrerer på det som er relevant for dem, ser hva som fortsatt er
+          ledig, og reserverer anonymt — uten konto.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#passphrase">Lag din ønskeliste</a>
+          <details
+            id="finn-onskeliste"
+            class="reveal"
+            open={errorMessage !== null}
+          >
+            <summary class="btn btn-secondary">Finn ønskeliste</summary>
+            <div class="reveal-panel">
+              <p class="muted">
+                Skriv inn passordet fra invitasjonen for å åpne ønskelisten.
+              </p>
+              <form method="post" action="/api/login">
+                <label for="passphrase">Passord</label>
+                <input
+                  type="password"
+                  id="passphrase"
+                  name="passphrase"
+                  required
+                  autocomplete="current-password"
+                  autofocus={errorMessage !== null}
+                />
+                {
+                  errorMessage && (
+                    <p class="error" role="alert">
+                      {errorMessage}
+                    </p>
+                  )
+                }
+                <button type="submit" class="btn btn-primary">
+                  Åpne ønskelisten
+                </button>
+              </form>
+            </div>
+          </details>
+        </div>
+      </section>
 
-    <section class="features">
-      <div class="feature-card">
-        <div class="feature-title">Filtrer som du vil</div>
-        <p>
-          Sett opp egne kategorier — per person, per anledning, eller
-          fellesgaver og spleisegaver for seg.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-title">Reserver anonymt</div>
-        <p>
-          Marker at du tenker å kjøpe noe — ingen ser hvem, ingen
-          personopplysninger lagres.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-title">Spleis sammen</div>
-        <p>
-          Meld interesse for større gaver og se hvor mange andre gjester som
-          blir med.
-        </p>
-      </div>
-    </section>
+      <section class="features">
+        <div class="feature-card">
+          <div class="feature-title">Filtrer som du vil</div>
+          <p>
+            Sett opp egne kategorier — per person, per anledning, eller
+            fellesgaver og spleisegaver for seg.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">Reserver anonymt</div>
+          <p>
+            Marker at du tenker å kjøpe noe — ingen ser hvem, ingen
+            personopplysninger lagres.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">Spleis sammen</div>
+          <p>
+            Meld interesse for større gaver og se hvor mange andre gjester
+            som blir med.
+          </p>
+        </div>
+      </section>
+    </main>
 
     <footer class="landing-footer">
-      Ingen søkemotorindeksering. Ingen personopplysninger lagres.
+      Ingen søkemotorindeksering. Ingen personopplysninger lagres, bortsett
+      fra valgfritt visningsnavn ved spleisegaver.
     </footer>
   </div>
 </BaseLayout>
@@ -105,9 +112,8 @@ const errorMessage =
     --border-strong: #cabfae;
     --text-primary: #2f2822;
     --text-secondary: #726657;
-    --text-muted: #a89c8c;
     --text-on-accent: #fff8f2;
-    --accent: #c96a44;
+    --accent-strong: #b5502f;
     --font-display: "Lora", Georgia, serif;
     --font-body:
       "Work Sans", -apple-system, Helvetica, Arial, sans-serif;
@@ -208,7 +214,10 @@ const errorMessage =
     padding: 24px;
     text-align: center;
     font-size: 12px;
-    color: var(--text-muted);
+    /* text-secondary i stedet for text-muted: text-muted mot surface-page
+       gir ~2.6:1 kontrast, under WCAG AA-kravet på 4.5:1 for normal tekst
+       (MVP.md §18) */
+    color: var(--text-secondary);
   }
 
   /* "Finn ønskeliste" er en native <details>-avsløring: ingen JS nødvendig.
@@ -290,7 +299,10 @@ const errorMessage =
   }
 
   .btn-primary {
-    background: var(--accent);
+    /* accent-strong i stedet for accent: accent (#c96a44) mot
+       text-on-accent gir ~3.6:1 kontrast, under WCAG AA-kravet på 4.5:1
+       (MVP.md §18). accent-strong (#b5502f) gir ~5:1. */
+    background: var(--accent-strong);
     color: var(--text-on-accent);
     border: none;
   }
