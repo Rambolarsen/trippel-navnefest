@@ -252,6 +252,43 @@ export const gifts: Gift[] = [
     image: "/images/klatreparkopplevelse-sofie.png",
   },
   {
+    id: "kinoopplevelse-jonas",
+    title: "Kinoopplevelse",
+    description: "Billetter eller gavekort til en kinotur sammen med familien.",
+    tags: ["Jonas", "Opplevelse"],
+    priceLabel: "Valgfritt",
+    mode: "single",
+    image: "/images/kinoopplevelse-sofie.png",
+  },
+  {
+    id: "badelandopplevelse-jonas",
+    title: "Badeland-opplevelse",
+    description: "Billetter eller gavekort til en dag i badeland sammen med familien.",
+    tags: ["Jonas", "Opplevelse"],
+    priceLabel: "Valgfritt",
+    mode: "single",
+    image: "/images/badelandopplevelse-sofie.png",
+  },
+  {
+    id: "klatreparkopplevelse-jonas",
+    title: "Klatrepark-opplevelse",
+    description:
+      "Billetter eller gavekort til en dag med klatring og aktivitet sammen med familien.",
+    tags: ["Jonas", "Opplevelse"],
+    priceLabel: "Valgfritt",
+    mode: "single",
+    image: "/images/klatreparkopplevelse-sofie.png",
+  },
+  {
+    id: "badelandopplevelse-edvin",
+    title: "Badeland-opplevelse",
+    description: "Billetter eller gavekort til en dag i badeland sammen med familien.",
+    tags: ["Edvin", "Opplevelse"],
+    priceLabel: "Valgfritt",
+    mode: "single",
+    image: "/images/badelandopplevelse-sofie.png",
+  },
+  {
     id: "kpop-demon-hunters-kostyme-rumi",
     title: "K-pop Demon Hunters™ Rumi barnkostyme",
     description:
