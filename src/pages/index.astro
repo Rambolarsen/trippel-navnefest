@@ -11,50 +11,301 @@ const errorMessage =
 ---
 
 <BaseLayout title="Navnefest – ønskeliste">
-  <main>
-    <h1>Navnefest for Edvin, Jonas og Sofie</h1>
-    <p class="muted">
-      Skriv inn passordet fra invitasjonen for å åpne ønskelisten.
-    </p>
+  <div class="landing">
+    <header class="landing-header">
+      <div class="wordmark">Ønskeboks</div>
+    </header>
 
-    <form method="post" action="/api/login">
-      <label for="passphrase">Passord</label>
-      <input
-        type="password"
-        id="passphrase"
-        name="passphrase"
-        required
-        autocomplete="current-password"
-        autofocus={errorMessage !== null}
-      />
-      {
-        errorMessage && (
-          <p class="error" role="alert">
-            {errorMessage}
-          </p>
-        )
-      }
-      <button type="submit">Åpne ønskelisten</button>
-    </form>
-  </main>
+    <section class="hero">
+      <h1>Én delt ønskeliste, uansett anledning</h1>
+      <p>
+        Ønskeboks er en enkel, passordbeskyttet ønskeliste du kan sette opp
+        for bursdager, navnefester eller andre anledninger. Gjester
+        filtrerer på det som er relevant for dem, ser hva som fortsatt er
+        ledig, og reserverer anonymt — uten konto.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#finn-onskeliste">Lag din ønskeliste</a>
+        <details id="finn-onskeliste" class="reveal" open={errorMessage !== null}>
+          <summary class="btn btn-secondary">Finn ønskeliste</summary>
+          <div class="reveal-panel">
+            <p class="muted">
+              Skriv inn passordet fra invitasjonen for å åpne ønskelisten.
+            </p>
+            <form method="post" action="/api/login">
+              <label for="passphrase">Passord</label>
+              <input
+                type="password"
+                id="passphrase"
+                name="passphrase"
+                required
+                autocomplete="current-password"
+                autofocus={errorMessage !== null}
+              />
+              {
+                errorMessage && (
+                  <p class="error" role="alert">
+                    {errorMessage}
+                  </p>
+                )
+              }
+              <button type="submit" class="btn btn-primary">
+                Åpne ønskelisten
+              </button>
+            </form>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-title">Filtrer som du vil</div>
+        <p>
+          Sett opp egne kategorier — per person, per anledning, eller
+          fellesgaver og spleisegaver for seg.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Reserver anonymt</div>
+        <p>
+          Marker at du tenker å kjøpe noe — ingen ser hvem, ingen
+          personopplysninger lagres.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Spleis sammen</div>
+        <p>
+          Meld interesse for større gaver og se hvor mange andre gjester som
+          blir med.
+        </p>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      Ingen søkemotorindeksering. Ingen personopplysninger lagres.
+    </footer>
+  </div>
 </BaseLayout>
 
 <style>
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-block-start: 1rem;
+  @import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Work+Sans:wght@400;500;600;700&display=swap");
+
+  /* Landingssiden bryter ut av BaseLayouts sentrerte 44rem-container
+     for å få seksjoner i full bredde (header/kort opp mot 1040px) */
+  :global(.container) {
+    max-width: none;
+    padding: 0;
   }
 
-  input {
-    max-width: 22rem;
+  .landing {
+    --surface-page: #fdfaf5;
+    --surface-card: #ffffff;
+    --border-subtle: #e2d3b8;
+    --border-strong: #cabfae;
+    --text-primary: #2f2822;
+    --text-secondary: #726657;
+    --text-muted: #a89c8c;
+    --text-on-accent: #fff8f2;
+    --accent: #c96a44;
+    --font-display: "Lora", Georgia, serif;
+    --font-body:
+      "Work Sans", -apple-system, Helvetica, Arial, sans-serif;
+    --text-body: 15px;
+    --radius-lg: 20px;
+    --shadow-card:
+      0 1px 2px rgba(47, 40, 34, 0.05), 0 6px 16px -8px rgba(47, 40, 34, 0.15);
+
+    background: var(--surface-page);
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  .landing-header {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 28px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+  }
+
+  .hero {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .hero p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin: 0;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .features {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .feature-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .landing-footer {
+    border-top: 1px solid var(--border-subtle);
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* "Finn ønskeliste" er en native <details>-avsløring: ingen JS nødvendig.
+     Lukket viser bare summary (styles som en vanlig pill-knapp) side om
+     side med den primære knappen; åpen tvinges den til egen full-bredde
+     rad i den wrappende flex-raden, med skjemaet rett under knappen. */
+  .reveal summary {
+    list-style: none;
+  }
+
+  .reveal summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .reveal[open] {
+    flex-basis: 100%;
+  }
+
+  .reveal-panel {
+    margin-top: 16px;
+    max-width: 320px;
+    margin-inline: auto;
+    padding: 20px;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    text-align: left;
+  }
+
+  .reveal-panel .muted {
+    margin-top: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .reveal-panel form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .reveal-panel input {
+    width: 100%;
+  }
+
+  .reveal-panel .btn {
+    align-self: flex-start;
   }
 
   .error {
     margin: 0;
     color: #9b2c13;
     font-weight: 600;
+  }
+
+  /* Button.jsx fra designsystemet: pill-form, 44px høyde, 0 20px padding */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 20px;
+    min-width: 44px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-body);
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      filter 120ms cubic-bezier(0.3, 0, 0.15, 1),
+      transform 120ms cubic-bezier(0.3, 0, 0.15, 1);
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--text-on-accent);
+    border: none;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(0.94);
+  }
+
+  .btn-secondary {
+    background: var(--surface-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+  }
+
+  .btn-secondary:hover {
+    filter: brightness(0.94);
   }
 </style>
