@@ -114,11 +114,15 @@ export default function ReservationRecovery({ initialRecoveryCode }: Props) {
           <div className="reservation-recovery-row">
             <input
               id="recovery-code"
+              name="recoveryCode"
+              type="text"
               value={recoveryCode}
               onChange={(event) => setRecoveryCodeInput(event.target.value)}
               placeholder="ABCDE-FGHJK-MNPQR-STVWX"
               autoComplete="off"
               autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
               required
             />
             <button type="submit" disabled={busy || !recoveryCode.trim()}>
