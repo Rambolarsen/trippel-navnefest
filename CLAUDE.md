@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A private wishlist ("ønskeliste") app for a joint naming ceremony ("navnefest") for three children (Edvin, Jonas, Sofie). Guests unlock the list with a shared passphrase from the invitation, filter gifts per child, and reserve gifts anonymously — no accounts, no personal data stored. Full spec in [MVP.md](MVP.md) (Norwegian); code comments reference it by section (e.g. `MVP.md §12`) — check the relevant section there before changing behavior around auth, reservations, or privacy.
+A private wishlist ("ønskeliste") app for a joint naming ceremony ("navnefest") for three children (Edvin, Jonas, Sofie), extended to support several wishlists side by side (currently `navnefest` and `jul`, Christmas). Guests unlock a list with that list's shared passphrase from the invitation, filter gifts per recipient, and reserve gifts anonymously — no accounts, no personal data stored. Full spec in [MVP.md](MVP.md) (Norwegian); code comments reference it by section (e.g. `MVP.md §12`) — check the relevant section there before changing behavior around auth, reservations, or privacy.
 
 Astro + TypeScript SSR app on Cloudflare Workers with a D1 (SQLite) database, React islands for interactive parts. Code comments and commit messages are in Norwegian.
 
@@ -39,7 +39,9 @@ Session token format: `<role>.<expiry-ms>.<base64url(HMAC-SHA256(payload))>`, im
 
 Guests can delete only their own reservation (token hash must match); admins can wipe all reservations for a gift (reset). See `reserveSingleGift`, `addGroupInterest`, `deleteMyReservation`, `deleteAllReservationsForGift`.
 
-**Gift catalog is static, not database-backed**: gifts live in [src/data/gifts.ts](src/data/gifts.ts) as a hardcoded array (by design — MVP.md §3, no admin editing UI). Only reservation *state* is in D1. Adding/editing gifts means editing this file and deploying; images go in `public/images/` referenced as `/images/filename.jpg`.
+**Multiple wishlists** ([src/data/wishlists.ts](src/data/wishlists.ts)): each list has an id, texts, its own passphrase env var, theme (`data-theme` on `<html>`, see BaseLayout), filters and gift array. The passphrase decides which list a login opens; the guest session payload carries the granted list ids (`guest.<exp>.<navnefest+jul>`; legacy cookies without that part mean `navnefest`), and logging in with another list's passphrase adds to it. Middleware puts the granted ids in `Astro.locals.wishlists`; list pages (`/onskeliste/<id>`) and gift APIs treat gifts on non-granted lists as unknown (404). Invitation links are one per list (`invitation_tokens.wishlist_id`). Reservations stay keyed by gift id only, so **gift ids must be unique across all lists** (enforced by `test/wishlists.test.ts`; prefix Christmas ids with `jul-`).
+
+**Gift catalog is static, not database-backed**: gifts live as hardcoded arrays — navnefest in [src/data/gifts.ts](src/data/gifts.ts), Christmas in [src/data/jul-gifts.ts](src/data/jul-gifts.ts) (by design — MVP.md §3, no admin editing UI). Only reservation *state* is in D1. Adding/editing gifts means editing these files and deploying; images go in `public/images/` referenced as `/images/filename.jpg`. Filter buttons come from each list's `filters` in wishlists.ts, so tags must match those.
 
 **Client/server sync for reservation status**: [src/pages/api/gifts/status.ts](src/pages/api/gifts/status.ts) returns counts + "reserved by me" flags for all gifts (never leaks tokens). The client-side nanostore [src/stores/giftStatus.ts](src/stores/giftStatus.ts) (`$giftStatus`) is the single source of truth that both `GiftFilters` (the "available only" filter) and `GiftReservationButton` islands subscribe to, so a reservation immediately updates both the card and the filter without a full page reload.
 
@@ -49,7 +51,7 @@ Guests can delete only their own reservation (token hash must match); admins can
 
 ## Required environment / secrets
 
-Four secrets (see [.env.example](.env.example)), never committed: `GUEST_PASSPHRASE`, `ADMIN_PASSPHRASE`, `SESSION_SECRET`, `RESERVATION_SECRET`. Locally these go in `.dev.vars`; in production they're set via `wrangler secret put`. `wrangler.jsonc`'s `database_id` is a placeholder until `wrangler d1 create` is run for the real deployment.
+Four required secrets (see [.env.example](.env.example)), never committed: `GUEST_PASSPHRASE` (navnefest list), `ADMIN_PASSPHRASE`, `SESSION_SECRET`, `RESERVATION_SECRET`, plus optional `GUEST_PASSPHRASE_JUL` (Christmas list; unset means that list can only be opened via an invitation link). Locally these go in `.dev.vars`; in production they're set via `wrangler secret put`. `wrangler.jsonc`'s `database_id` is a placeholder until `wrangler d1 create` is run for the real deployment.
 
 ## CI/CD
 

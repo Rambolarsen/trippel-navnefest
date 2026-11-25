@@ -30,6 +30,7 @@ jobs:
         run: |
           cat > .dev.vars << 'EOF'
           GUEST_PASSPHRASE=ci-gjest-passord
+          GUEST_PASSPHRASE_JUL=ci-jul-passord
           ADMIN_PASSPHRASE=ci-admin-passord
           SESSION_SECRET=ci-session-secret
           RESERVATION_SECRET=ci-reservation-secret

@@ -6,6 +6,7 @@ declare module "cloudflare:test" {
     DB: D1Database;
     TEST_MIGRATIONS: D1Migration[];
     GUEST_PASSPHRASE: string;
+    GUEST_PASSPHRASE_JUL: string;
     ADMIN_PASSPHRASE: string;
     SESSION_SECRET: string;
     RESERVATION_SECRET: string;

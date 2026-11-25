@@ -2,40 +2,32 @@ import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
 import { $giftStatus, refreshGiftStatus } from "../stores/giftStatus";
 
-// Filtrene fra MVP.md §7. Filtrering skjer uten sidelasting ved å
-// vise/skjule de server-rendrede gavekortene ([data-gift-card]).
-// Reservasjonsstatus hentes fra den delte storen, slik at
-// «Ledige»-filteret reflekterer faktiske reservasjoner.
-const FILTERS = [
-  "Alle",
-  "Edvin",
-  "Jonas",
-  "Sofie",
-  "Fellesgaver",
-  "Spleisegaver",
-  "Ledige",
-] as const;
+// Filtrene fra MVP.md §7. «Alle» og «Ledige» finnes alltid; filtrene
+// mellom dem kommer fra ønskelisten (src/data/wishlists.ts). Filtrering
+// skjer uten sidelasting ved å vise/skjule de server-rendrede
+// gavekortene ([data-gift-card]). Reservasjonsstatus hentes fra den
+// delte storen, slik at «Ledige»-filteret reflekterer faktiske
+// reservasjoner.
+type TagFilter = { label: string; tag: string };
+type Filter = { label: string; matches: (card: HTMLElement) => boolean };
 
-type Filter = (typeof FILTERS)[number];
+const ALL: Filter = { label: "Alle", matches: () => true };
+const AVAILABLE: Filter = {
+  label: "Ledige",
+  matches: (card) => card.dataset.status === "available",
+};
 
-function matchesFilter(card: HTMLElement, filter: Filter): boolean {
-  const tags = (card.dataset.tags ?? "").split("|");
-  switch (filter) {
-    case "Alle":
-      return true;
-    case "Fellesgaver":
-      return tags.includes("Fellesgave");
-    case "Spleisegaver":
-      return tags.includes("Spleisegave");
-    case "Ledige":
-      return card.dataset.status === "available";
-    default:
-      return tags.includes(filter);
-  }
+function tagFilter({ label, tag }: TagFilter): Filter {
+  return {
+    label,
+    matches: (card) => (card.dataset.tags ?? "").split("|").includes(tag),
+  };
 }
 
-export default function GiftFilters() {
-  const [active, setActive] = useState<Filter>("Alle");
+export default function GiftFilters({ filters: tagFilters }: { filters: TagFilter[] }) {
+  const filters = [ALL, ...tagFilters.map(tagFilter), AVAILABLE];
+  const [activeLabel, setActiveLabel] = useState(ALL.label);
+  const active = filters.find((filter) => filter.label === activeLabel) ?? ALL;
   const [visibleCount, setVisibleCount] = useState<number | null>(null);
   const statuses = useStore($giftStatus);
 
@@ -54,25 +46,25 @@ export default function GiftFilters() {
         !status || status.mode === "group" || status.reservationCount === 0;
       card.dataset.status = available ? "available" : "reserved";
 
-      const show = matchesFilter(card, active);
+      const show = active.matches(card);
       card.hidden = !show;
       if (show) visible += 1;
     }
     setVisibleCount(visible);
-  }, [active, statuses]);
+  }, [activeLabel, statuses]);
 
   return (
     <div className="gift-filters">
       <div className="filter-buttons" role="group" aria-label="Filtrer gaver">
-        {FILTERS.map((filter) => (
+        {filters.map((filter) => (
           <button
-            key={filter}
+            key={filter.label}
             type="button"
             className={filter === active ? "filter-btn is-active" : "filter-btn"}
             aria-pressed={filter === active}
-            onClick={() => setActive(filter)}
+            onClick={() => setActiveLabel(filter.label)}
           >
-            {filter}
+            {filter.label}
           </button>
         ))}
       </div>

@@ -17,7 +17,8 @@ function readSecrets() {
       const get = (name) => text.match(new RegExp(`^${name}=(.*)$`, "m"))?.[1]?.trim();
       const guest = get("GUEST_PASSPHRASE");
       const admin = get("ADMIN_PASSPHRASE");
-      if (guest && admin) return { guest, admin };
+      const jul = get("GUEST_PASSPHRASE_JUL");
+      if (guest && admin) return { guest, admin, jul };
     } catch {
       // prøv neste fil
     }
@@ -65,11 +66,12 @@ function check(name, condition, detail = "") {
 }
 
 async function run() {
-  const { guest, admin } = readSecrets();
+  const { guest, admin, jul } = readSecrets();
   const A = browser();
   const B = browser();
   const ADMIN = browser();
   const INVITED = browser();
+  const JUL = browser();
   let body;
 
   console.log("Innlogging:");
@@ -93,6 +95,12 @@ async function run() {
   }
 
   res = await A("/onskeliste");
+  check(
+    "/onskeliste sender til gjestens liste",
+    res.status === 302 && res.headers.get("location")?.endsWith("/onskeliste/navnefest"),
+    `(${res.status} ${res.headers.get("location")})`,
+  );
+  res = await A("/onskeliste/navnefest");
   const html = await res.text();
   check("beskyttet side åpnes med sesjon", res.status === 200 && html.includes("Ønskeliste"));
 
@@ -105,7 +113,11 @@ async function run() {
   });
   check("admin logger inn", res.status === 200, `(${res.status})`);
 
-  res = await ADMIN("/api/admin/invitation", { method: "POST" });
+  res = await ADMIN("/api/admin/invitation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wishlist: "navnefest" }),
+  });
   body = await res.json();
   const invitationPath = new URL(body.invitationUrl).pathname;
   check(
@@ -115,7 +127,7 @@ async function run() {
   );
   res = await INVITED(invitationPath);
   check("invitasjonslenken oppretter gjestesesjon", res.status === 302, `(${res.status})`);
-  res = await INVITED("/onskeliste");
+  res = await INVITED("/onskeliste/navnefest");
   check("inviterte gjester får tilgang til ønskelisten", res.status === 200, `(${res.status})`);
 
   for (const gift of ["kid-pop-up-benk", "nintendo-switch-2"]) {
@@ -216,6 +228,41 @@ async function run() {
 
   res = await B("/api/admin/gifts/kid-pop-up-benk/reservations", { method: "DELETE" });
   check("gjestesesjon får 401 på admin-API", res.status === 401, `(${res.status})`);
+
+  if (jul) {
+    console.log("Flere ønskelister:");
+    res = await JUL("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ passphrase: jul }),
+    });
+    body = await res.json();
+    check("julepassordet åpner julelisten", res.status === 200 && body.wishlist === "jul");
+    res = await JUL("/onskeliste/jul");
+    check("julelisten vises", res.status === 200, `(${res.status})`);
+    res = await JUL("/onskeliste/navnefest");
+    check("julegjest sendes bort fra navnefestlisten", res.status === 302, `(${res.status})`);
+    res = await JUL("/api/gifts/kid-pop-up-benk/reservations", { method: "POST" });
+    check("julegjest kan ikke reservere navnefestgaver", res.status === 404, `(${res.status})`);
+    res = await JUL("/api/gifts/status");
+    body = await res.json();
+    check("status for julegjest inneholder ikke navnefestgaver", !("kid-pop-up-benk" in body));
+
+    res = await JUL("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ passphrase: guest }),
+    });
+    res = await JUL("/onskeliste/navnefest");
+    const both = await res.text();
+    check(
+      "med begge passordene ser gjesten begge listene",
+      res.status === 200 && both.includes('href="/onskeliste/jul"'),
+      `(${res.status})`,
+    );
+  } else {
+    console.log("Hopper over flere ønskelister (GUEST_PASSPHRASE_JUL mangler)");
+  }
 
   console.log("Utlogging:");
   res = await A("/api/logout", { method: "POST" });

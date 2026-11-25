@@ -21,6 +21,7 @@ export default defineConfig(async () => {
           compatibilityFlags: ["nodejs_compat"],
           bindings: {
             GUEST_PASSPHRASE: "test-gjest-123",
+            GUEST_PASSPHRASE_JUL: "test-jul-789",
             ADMIN_PASSPHRASE: "test-admin-456",
             SESSION_SECRET: "test-session-secret",
             RESERVATION_SECRET: "test-reservation-secret",

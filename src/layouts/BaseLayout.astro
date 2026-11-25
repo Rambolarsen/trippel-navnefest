@@ -1,13 +1,17 @@
 ---
+import type { WishlistTheme } from "../data/wishlists";
+
 type Props = {
   title: string;
+  // Ønskelistens tema; "standard" er den varme navnefestpaletten
+  theme?: WishlistTheme;
 };
 
-const { title } = Astro.props;
+const { title, theme = "standard" } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="nb">
+<html lang="nb" data-theme={theme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,6 +46,46 @@ const { title } = Astro.props;
 
     /* Trykkflater skal være minst 44 × 44 px (MVP.md §18) */
     --tap-target: 2.75rem;
+  }
+
+  /* Juletema: dyp julerød og granskog-grønn på en lys, kald
+     snøbakgrunn. Alle tekst/bakgrunn-par holder WCAG AA (MVP.md §18):
+     hvit på primær ~8:1, accent mot bakgrunn ~7:1. */
+  :root[data-theme="jul"] {
+    --color-bg: #f6f4f1;
+    --color-text: #2b2220;
+    --color-text-muted: #574945;
+    --color-primary: #a3191f;
+    --color-primary-strong: #7f1217;
+    --color-accent: #1d5a3c;
+    --color-tag-bg: rgba(29, 90, 60, 0.12);
+    --color-tag-text: #174a31;
+    --color-border: #e2d6cf;
+    --color-focus: #1d5a3c;
+  }
+
+  /* Diskret snøfall i bakgrunnen og en rød/grønn girlander-stripe øverst */
+  :root[data-theme="jul"] body {
+    background-color: var(--color-bg);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(163, 25, 31, 0.05) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 80%, rgba(29, 90, 60, 0.06) 0 2px, transparent 3px),
+      radial-gradient(circle at 45% 60%, rgba(43, 34, 32, 0.05) 0 1.5px, transparent 2.5px);
+    background-size: 120px 120px, 160px 160px, 90px 90px;
+    border-top: 6px solid transparent;
+    border-image: repeating-linear-gradient(
+        90deg,
+        var(--color-primary) 0 24px,
+        #f6f4f1 24px 32px,
+        var(--color-accent) 32px 56px,
+        #f6f4f1 56px 64px
+      )
+      1;
+  }
+
+  :root[data-theme="jul"] h1::before {
+    /* Tom alternativtekst: dekorasjonen leses ikke opp av skjermlesere */
+    content: "🎄 " / "";
   }
 
   *,

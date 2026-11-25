@@ -1,36 +1,67 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import GiftCard from "../components/GiftCard.astro";
-import GiftFilters from "../components/GiftFilters.tsx";
-import NameForm from "../components/NameForm.tsx";
-import ReservationRecovery from "../components/ReservationRecovery.tsx";
-import { getCurrentRecoveryCode } from "../lib/reservations";
-import { gifts } from "../data/gifts";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GiftCard from "../../components/GiftCard.astro";
+import GiftFilters from "../../components/GiftFilters.tsx";
+import NameForm from "../../components/NameForm.tsx";
+import ReservationRecovery from "../../components/ReservationRecovery.tsx";
+import { getCurrentRecoveryCode } from "../../lib/reservations";
+import { getWishlist, isWishlistId, sortGifts } from "../../data/wishlists";
 
-// Sorter høyt prioriterte gaver først
-const sortedGifts = [...gifts].sort(
-  (a, b) => (b.priority === "high" ? 1 : 0) - (a.priority === "high" ? 1 : 0),
-);
+// Listen gjesten ikke har tilgang til (eller som ikke finnes), sendes
+// tilbake til gjestens egen liste.
+const requested = Astro.params.liste;
+if (!isWishlistId(requested) || !Astro.locals.wishlists.includes(requested)) {
+  return Astro.redirect("/onskeliste");
+}
+
+const wishlist = getWishlist(requested);
+const myWishlists = Astro.locals.wishlists.map(getWishlist);
+const sortedGifts = sortGifts(wishlist.gifts);
 const recoveryCode = await getCurrentRecoveryCode(Astro.cookies);
 ---
 
-<BaseLayout title="Ønskeliste – navnefest for Edvin, Jonas og Sofie">
+<BaseLayout title={wishlist.pageTitle} theme={wishlist.theme}>
   <main>
-    <h1>Ønskeliste</h1>
-    <p class="muted">
-      Flere har spurt hva barna ønsker seg til navnefesten. Gaver er selvfølgelig
-      ikke nødvendig, men her er noen forslag dersom du ønsker å gi noe.
-    </p>
+    {
+      myWishlists.length > 1 && (
+        <nav class="wishlist-switcher" aria-label="Ønskelister">
+          {myWishlists.map((list) => (
+            <a
+              href={`/onskeliste/${list.id}`}
+              aria-current={list.id === wishlist.id ? "page" : undefined}
+            >
+              {list.name}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    <h1>{wishlist.heading}</h1>
+    <p class="muted">{wishlist.intro}</p>
 
     {/* client:only: navnet leses fra localStorage og finnes ikke ved SSR */}
     <NameForm client:only="react" />
     <ReservationRecovery client:load initialRecoveryCode={recoveryCode} />
 
-    <GiftFilters client:load />
+    {
+      sortedGifts.length === 0 ? (
+        <p class="empty-list">Ønskene er ikke lagt inn ennå. Kom gjerne tilbake litt senere!</p>
+      ) : (
+        <>
+          <GiftFilters client:load filters={wishlist.filters} />
 
-    <div class="gift-list">
-      {sortedGifts.map((gift) => <GiftCard gift={gift} />)}
-    </div>
+          <div class="gift-list">
+            {sortedGifts.map((gift) => <GiftCard gift={gift} />)}
+          </div>
+        </>
+      )
+    }
+
+    <p class="other-wishlist muted">
+      Har du fått passord til en annen ønskeliste?{" "}
+      <a href="/?nytt-passord#finn-onskeliste">Skriv det inn her</a>.
+    </p>
   </main>
 </BaseLayout>
 
@@ -46,6 +77,46 @@ const recoveryCode = await getCurrentRecoveryCode(Astro.cookies);
     .gift-list {
       grid-template-columns: 1fr 1fr;
     }
+  }
+
+  .wishlist-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-end: 0.5rem;
+  }
+
+  .wishlist-switcher a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-target);
+    padding: 0.25rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .wishlist-switcher a[aria-current="page"] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+
+  .empty-list {
+    margin-block: 2rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .other-wishlist {
+    margin-block-start: 2.5rem;
+    font-size: 0.9rem;
+    text-align: center;
   }
 </style>
 

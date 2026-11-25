@@ -12,11 +12,10 @@ export type Gift = {
   link?: string;
 };
 
-export const CHILDREN = ["Edvin", "Jonas", "Sofie"] as const;
-
-// Startutvalget fra MVP.md §20. Gavene administreres i denne filen
-// i første versjon – ingen admin-redigering (MVP.md §3).
-export const gifts: Gift[] = [
+// Gavene til navnefesten (startutvalget fra MVP.md §20). Gavene
+// administreres i kode – ingen admin-redigering (MVP.md §3). Hvilken
+// ønskeliste gavene hører til, bestemmes i ./wishlists.ts.
+export const navnefestGifts: Gift[] = [
   {
     id: "nintendo-switch-2",
     title: "Nintendo Switch 2",
@@ -385,7 +384,3 @@ export const gifts: Gift[] = [
     link: "https://www.jula.no/catalog/fritid/friluftsliv-og-camping/telting/soveposer/teppepose-008707/",
   },
 ];
-
-export function getGiftById(id: string): Gift | undefined {
-  return gifts.find((gift) => gift.id === id);
-}
