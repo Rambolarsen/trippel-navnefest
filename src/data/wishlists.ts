@@ -70,8 +70,7 @@ export const wishlists: Wishlist[] = [
     filters: [
       ...CHILD_FILTERS,
       { label: "Lars-Erik", tag: "Lars-Erik" },
-      // TODO: navnet til Lars-Eriks kone
-      { label: "Mamma", tag: "Mamma" },
+      { label: "Mona", tag: "Mona" },
       { label: "Fellesgaver", tag: "Fellesgave" },
       { label: "Spleisegaver", tag: "Spleisegave" },
     ],
