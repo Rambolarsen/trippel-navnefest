@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { gifts, type GiftMode } from "../../../data/gifts";
+import type { GiftMode } from "../../../data/gifts";
+import { getWishlist } from "../../../data/wishlists";
 import { getDb } from "../../../lib/database";
 import {
   countReservationsByGift,
@@ -15,11 +16,12 @@ type GiftStatus = {
   participants?: string[];
 };
 
-// Reservasjonsstatus for alle gaver (MVP.md §12). Krever gyldig
+// Reservasjonsstatus for alle gaver på ønskelistene gjesten har
+// tilgang til (MVP.md §12). Krever gyldig
 // gjestesesjon via middleware. Tokens lekker aldri – kun tall og
 // et flagg for gjeldende nettleser. Deltakernavn på spleisegaver
 // returneres bare for gaver gjesten selv er påmeldt (MVP.md §8).
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, locals }) => {
   const db = getDb();
   const tokenHash = await getReservationTokenHash(cookies);
 
@@ -29,6 +31,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   ]);
 
   const status: Record<string, GiftStatus> = {};
+  const gifts = locals.wishlists.flatMap((id) => getWishlist(id).gifts);
   for (const gift of gifts) {
     const entry: GiftStatus = {
       mode: gift.mode,

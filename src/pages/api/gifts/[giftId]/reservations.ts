@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getGiftById } from "../../../../data/gifts";
+import { findGift } from "../../../../data/wishlists";
 import { getDb } from "../../../../lib/database";
 import {
   addGroupInterest,
@@ -30,8 +30,10 @@ async function readDisplayName(request: Request): Promise<string | null> {
 
 // Opprett reservasjon (enkeltgave) eller spleiseinteresse (MVP.md §12).
 // Sesjonskontrollen skjer i middleware.
-export const POST: APIRoute = async ({ params, request, cookies }) => {
-  const gift = getGiftById(params.giftId ?? "");
+export const POST: APIRoute = async ({ params, request, cookies, locals }) => {
+  // Gaver på lister gjesten ikke har tilgang til, behandles som ukjente
+  const found = findGift(params.giftId ?? "");
+  const gift = found && locals.wishlists.includes(found.wishlist.id) ? found.gift : null;
   if (!gift) {
     return Response.json({ error: "Ukjent gave" }, { status: 404 });
   }

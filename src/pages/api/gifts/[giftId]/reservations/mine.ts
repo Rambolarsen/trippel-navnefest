@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getGiftById } from "../../../../../data/gifts";
+import { findGift } from "../../../../../data/wishlists";
 import { getDb } from "../../../../../lib/database";
 import {
   deleteMyReservation,
@@ -9,8 +9,10 @@ import {
 
 // Opphev gjeldende nettlesers reservasjon (MVP.md §12). Sletter kun
 // rader som samsvarer med gjestens eget signerte token.
-export const DELETE: APIRoute = async ({ params, cookies }) => {
-  const gift = getGiftById(params.giftId ?? "");
+export const DELETE: APIRoute = async ({ params, cookies, locals }) => {
+  // Gaver på lister gjesten ikke har tilgang til, behandles som ukjente
+  const found = findGift(params.giftId ?? "");
+  const gift = found && locals.wishlists.includes(found.wishlist.id) ? found.gift : null;
   if (!gift) {
     return Response.json({ error: "Ukjent gave" }, { status: 404 });
   }

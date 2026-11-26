@@ -18,7 +18,8 @@ import {
 export const RESERVATION_COOKIE = "reservasjon";
 
 // Lengre enn gjestesesjonen (30 d), slik at angre-muligheten ikke
-// utløper før selve navnefesten.
+// utløper før selve anledningen. Samme kode gjelder på tvers av
+// ønskelistene.
 const RESERVATION_TOKEN_TTL_SECONDS = 90 * 24 * 60 * 60;
 const RECOVERY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ234567890";
 const RECOVERY_CODE_LENGTH = 20;

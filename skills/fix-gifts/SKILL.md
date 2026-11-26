@@ -5,11 +5,11 @@ description: Resolve missing or incorrect information in existing Trippel navnef
 
 # Fix Gifts
 
-Fix entries in the static catalog at `src/data/gifts.ts`. Use `verify-gifts` findings when available; otherwise inspect the catalog and identify the missing information first.
+Fix entries in the static catalog at `src/data/gifts.ts` (navnefest) or `src/data/jul-gifts.ts` (jul). Use `verify-gifts` findings when available; otherwise inspect the catalog and identify the missing information first.
 
 ## Workflow
 
-1. Read `src/data/gifts.ts`, `src/components/GiftFilters.tsx`, and the relevant parts of `MVP.md`. Identify the exact gift ids to change and preserve unrelated catalog entries.
+1. Read `src/data/gifts.ts` (navnefest) or `src/data/jul-gifts.ts` (jul), the list's `filters` in `src/data/wishlists.ts`, and the relevant parts of `MVP.md`. Identify the exact gift ids to change and preserve unrelated catalog entries.
 2. Confirm every gift’s recipient before editing. Use one or more of `Edvin`, `Jonas`, and `Sofie`; use `"Fellesgave"` only for a shared gift. If the recipient is missing or ambiguous, ask the user and wait. Never infer it.
 3. For a gift that needs a size, age, fit, or compatible model (such as clothing, shoes, helmets, skis, or accessories), ask for the exact requirement when it is absent. Never infer it from age or another gift. Put the confirmed detail in the title or description.
 4. When a gift is too broad to identify a single product, ask the user to select a product, brand, model, or acceptable alternative before adding a link or image. Do not choose one merely because it fits the price range.

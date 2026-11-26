@@ -8,9 +8,11 @@ const errorMessage =
     : errorKind
       ? "Det passordet stemte ikke. Prøv gjerne igjen."
       : null;
+// Innlogget gjest som vil skrive inn passordet til en annen ønskeliste
+const showPassphraseForm = errorMessage !== null || Astro.url.searchParams.has("nytt-passord");
 ---
 
-<BaseLayout title="Navnefest – ønskeliste">
+<BaseLayout title="Ønskeboks">
   <div class="landing">
     <header class="landing-header">
       <div class="wordmark">Ønskeboks</div>
@@ -30,7 +32,7 @@ const errorMessage =
           <details
             id="finn-onskeliste"
             class="reveal"
-            open={errorMessage !== null}
+            open={showPassphraseForm}
           >
             <summary class="btn btn-secondary">Finn ønskeliste</summary>
             <div class="reveal-panel">
@@ -45,7 +47,7 @@ const errorMessage =
                   name="passphrase"
                   required
                   autocomplete="current-password"
-                  autofocus={errorMessage !== null}
+                  autofocus={showPassphraseForm}
                 />
                 {
                   errorMessage && (

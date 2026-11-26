@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createGuestSession, verifyGuestPassphrase } from "../../lib/auth";
+import { grantGuestWishlist, verifyGuestPassphrase } from "../../lib/auth";
 import { isRateLimited } from "../../lib/rate-limit";
 
 const MAX_PASSPHRASE_LENGTH = 256;
@@ -39,16 +39,19 @@ export const POST: APIRoute = async (context) => {
       : redirect("/?feil=1", 303);
   }
 
-  if (
-    !passphrase ||
-    passphrase.length > MAX_PASSPHRASE_LENGTH ||
-    !(await verifyGuestPassphrase(passphrase))
-  ) {
+  // Passordet avgjør hvilken ønskeliste som åpnes
+  const wishlistId =
+    passphrase && passphrase.length <= MAX_PASSPHRASE_LENGTH
+      ? await verifyGuestPassphrase(passphrase)
+      : null;
+  if (!wishlistId) {
     return isJson
       ? Response.json({ error: "Feil passord" }, { status: 401 })
       : redirect("/?feil=1", 303);
   }
 
-  await createGuestSession(cookies);
-  return isJson ? new Response(null, { status: 200 }) : redirect("/onskeliste", 303);
+  await grantGuestWishlist(cookies, wishlistId);
+  return isJson
+    ? Response.json({ wishlist: wishlistId })
+    : redirect(`/onskeliste/${wishlistId}`, 303);
 };

@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { gifts } from "../data/gifts";
+import { wishlists, type WishlistId } from "../data/wishlists";
 import { hasValidAdminSession } from "../lib/auth";
 import { getDb } from "../lib/database";
-import { hasActiveInvitationToken } from "../lib/invitations";
+import { getWishlistsWithInvitationToken } from "../lib/invitations";
 import { countReservationsByGift } from "../lib/reservations";
 
 const isAdmin = await hasValidAdminSession(Astro.cookies);
@@ -16,21 +16,31 @@ const errorMessage =
       : null;
 
 // Kun tall vises – aldri hvem som har reservert (MVP.md §6).
-let rows: { id: string; title: string; mode: string; count: number }[] = [];
-let hasInvitationToken = false;
+type Row = { id: string; title: string; mode: string; count: number };
+let sections: {
+  id: WishlistId;
+  name: string;
+  hasInvitationToken: boolean;
+  rows: Row[];
+}[] = [];
 if (isAdmin) {
   const counts = await countReservationsByGift(getDb());
-  hasInvitationToken = await hasActiveInvitationToken(getDb());
-  rows = gifts.map((gift) => ({
-    id: gift.id,
-    title: gift.title,
-    mode: gift.mode === "group" ? "Spleis" : "Enkeltgave",
-    count: counts.get(gift.id) ?? 0,
+  const withInvitation = await getWishlistsWithInvitationToken(getDb());
+  sections = wishlists.map((wishlist) => ({
+    id: wishlist.id,
+    name: wishlist.name,
+    hasInvitationToken: withInvitation.has(wishlist.id),
+    rows: wishlist.gifts.map((gift) => ({
+      id: gift.id,
+      title: gift.title,
+      mode: gift.mode === "group" ? "Spleis" : "Enkeltgave",
+      count: counts.get(gift.id) ?? 0,
+    })),
   }));
 }
 ---
 
-<BaseLayout title="Admin – navnefest">
+<BaseLayout title="Admin – Ønskeboks">
   <main>
     <h1>Admin</h1>
     {
@@ -60,54 +70,63 @@ if (isAdmin) {
             Antall reservasjoner og spleiseinteresser per gave. Hvem som har
             reservert, lagres ikke og kan ikke vises.
           </p>
-          <section class="invitation" aria-labelledby="invitation-heading">
-            <h2 id="invitation-heading">Invitasjonslenke</h2>
-            <p class="muted">
-              {hasInvitationToken
-                ? "En invitasjonslenke er aktiv. Når du lager en ny, kan den gamle ikke lenger brukes til å logge inn."
-                : "Lag en lenke som gir gjester tilgang uten å skrive inn passord."}
-            </p>
-            {hasInvitationToken && (
-              <p class="muted">
-                Gjester som allerede er innlogget, beholder sesjonen sin i opptil 30 dager.
-              </p>
-            )}
-            <button type="button" id="create-invitation">
-              {hasInvitationToken ? "Lag ny invitasjonslenke" : "Lag invitasjonslenke"}
-            </button>
-            <div id="invitation-result" hidden>
-              <p class="success">Kopier lenken nå. Den vises ikke igjen av sikkerhetshensyn.</p>
-              <input id="invitation-url" type="text" readonly aria-label="Invitasjonslenke" />
-              <button type="button" class="btn-secondary" id="copy-invitation">Kopier lenke</button>
-            </div>
-            <p id="invitation-error" class="error" role="alert" hidden></p>
-          </section>
-          <ul class="admin-list" role="list">
-            {rows.map((row) => (
-              <li class="admin-row">
-                <div>
-                  <strong>{row.title}</strong>
-                  <p class="muted admin-meta">
-                    {row.mode} ·{" "}
-                    <span data-count-for={row.id}>
-                      {row.count === 1
-                        ? "1 reservasjon"
-                        : `${row.count} reservasjoner`}
-                    </span>
+          {sections.map((section) => (
+            <section class="wishlist-section" aria-labelledby={`heading-${section.id}`}>
+              <h2 id={`heading-${section.id}`}>{section.name}</h2>
+              <div class="invitation" data-invitation={section.id}>
+                <h3>Invitasjonslenke</h3>
+                <p class="muted">
+                  {section.hasInvitationToken
+                    ? "En invitasjonslenke er aktiv. Når du lager en ny, kan den gamle ikke lenger brukes til å logge inn."
+                    : "Lag en lenke som gir gjester tilgang til denne listen uten å skrive inn passord."}
+                </p>
+                {section.hasInvitationToken && (
+                  <p class="muted">
+                    Gjester som allerede er innlogget, beholder sesjonen sin i opptil 30 dager.
                   </p>
-                </div>
-                <button
-                  type="button"
-                  class="btn-secondary"
-                  data-reset-gift={row.id}
-                  data-gift-title={row.title}
-                  disabled={row.count === 0}
-                >
-                  Nullstill
+                )}
+                <button type="button" data-create-invitation>
+                  {section.hasInvitationToken ? "Lag ny invitasjonslenke" : "Lag invitasjonslenke"}
                 </button>
-              </li>
-            ))}
-          </ul>
+                <div data-invitation-result hidden>
+                  <p class="success">Kopier lenken nå. Den vises ikke igjen av sikkerhetshensyn.</p>
+                  <input data-invitation-url type="text" readonly aria-label={`Invitasjonslenke for ${section.name}`} />
+                  <button type="button" class="btn-secondary" data-copy-invitation>Kopier lenke</button>
+                </div>
+                <p data-invitation-error class="error" role="alert" hidden></p>
+              </div>
+              {section.rows.length === 0 ? (
+                <p class="muted">Ingen gaver på denne listen ennå.</p>
+              ) : (
+                <ul class="admin-list" role="list">
+                  {section.rows.map((row) => (
+                    <li class="admin-row">
+                      <div>
+                        <strong>{row.title}</strong>
+                        <p class="muted admin-meta">
+                          {row.mode} ·{" "}
+                          <span data-count-for={row.id}>
+                            {row.count === 1
+                              ? "1 reservasjon"
+                              : `${row.count} reservasjoner`}
+                          </span>
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn-secondary"
+                        data-reset-gift={row.id}
+                        data-gift-title={row.title}
+                        disabled={row.count === 0}
+                      >
+                        Nullstill
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))}
         </>
       )
     }
@@ -150,17 +169,21 @@ if (isAdmin) {
     border-radius: var(--radius);
   }
 
-  .invitation h2 {
+  .wishlist-section {
+    margin-block: 2rem;
+  }
+
+  .invitation h3 {
     margin-top: 0;
   }
 
-  #invitation-result {
+  [data-invitation-result] {
     display: grid;
     gap: 0.5rem;
     margin-top: 1rem;
   }
 
-  #invitation-url {
+  [data-invitation-url] {
     max-width: none;
   }
 
@@ -189,47 +212,52 @@ if (isAdmin) {
 </style>
 
 <script>
-  const createInvitationButton = document.querySelector<HTMLButtonElement>(
-    "#create-invitation",
-  );
-  const invitationResult = document.querySelector<HTMLElement>("#invitation-result");
-  const invitationUrl = document.querySelector<HTMLInputElement>("#invitation-url");
-  const copyInvitationButton = document.querySelector<HTMLButtonElement>("#copy-invitation");
-  const invitationError = document.querySelector<HTMLElement>("#invitation-error");
+  // Én invitasjonsboks per ønskeliste ([data-invitation="<liste>"])
+  for (const box of document.querySelectorAll<HTMLElement>("[data-invitation]")) {
+    const wishlist = box.dataset.invitation!;
+    const createButton = box.querySelector<HTMLButtonElement>("[data-create-invitation]")!;
+    const result = box.querySelector<HTMLElement>("[data-invitation-result]")!;
+    const urlInput = box.querySelector<HTMLInputElement>("[data-invitation-url]")!;
+    const copyButton = box.querySelector<HTMLButtonElement>("[data-copy-invitation]")!;
+    const errorText = box.querySelector<HTMLElement>("[data-invitation-error]")!;
 
-  createInvitationButton?.addEventListener("click", async () => {
-    if (!confirm("Lage en ny invitasjonslenke? En eventuell tidligere lenke kan ikke brukes til å logge inn etterpå.")) {
-      return;
-    }
+    createButton.addEventListener("click", async () => {
+      if (!confirm("Lage en ny invitasjonslenke? En eventuell tidligere lenke til denne listen kan ikke brukes til å logge inn etterpå.")) {
+        return;
+      }
 
-    createInvitationButton.disabled = true;
-    invitationError!.hidden = true;
-    try {
-      const response = await fetch("/api/admin/invitation", { method: "POST" });
-      if (!response.ok) throw new Error(String(response.status));
-      const body = (await response.json()) as { invitationUrl: string };
-      invitationUrl!.value = body.invitationUrl;
-      invitationResult!.hidden = false;
-      createInvitationButton.textContent = "Lag ny invitasjonslenke";
-      invitationUrl!.select();
-    } catch {
-      invitationError!.textContent = "Kunne ikke lage invitasjonslenken. Prøv igjen.";
-      invitationError!.hidden = false;
-    } finally {
-      createInvitationButton.disabled = false;
-    }
-  });
+      createButton.disabled = true;
+      errorText.hidden = true;
+      try {
+        const response = await fetch("/api/admin/invitation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wishlist }),
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        const body = (await response.json()) as { invitationUrl: string };
+        urlInput.value = body.invitationUrl;
+        result.hidden = false;
+        createButton.textContent = "Lag ny invitasjonslenke";
+        urlInput.select();
+      } catch {
+        errorText.textContent = "Kunne ikke lage invitasjonslenken. Prøv igjen.";
+        errorText.hidden = false;
+      } finally {
+        createButton.disabled = false;
+      }
+    });
 
-  copyInvitationButton?.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(invitationUrl!.value);
-      copyInvitationButton.textContent = "Kopiert";
-    } catch {
-      invitationUrl!.select();
-      document.execCommand("copy");
-      copyInvitationButton.textContent = "Kopiert";
-    }
-  });
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(urlInput.value);
+      } catch {
+        urlInput.select();
+        document.execCommand("copy");
+      }
+      copyButton.textContent = "Kopiert";
+    });
+  }
 
   // Nullstilling via DELETE-endepunktet (MVP.md §12), med bekreftelse.
   document.addEventListener("click", async (event) => {

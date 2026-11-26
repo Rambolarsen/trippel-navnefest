@@ -1,0 +1,5 @@
+---
+// /onskeliste sender gjesten til første ønskeliste sesjonen gir tilgang
+// til. Middleware har allerede sikret at det finnes minst én.
+return Astro.redirect(`/onskeliste/${Astro.locals.wishlists[0]}`);
+---

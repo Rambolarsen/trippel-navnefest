@@ -5,11 +5,11 @@ description: Audit existing gift entries in the Trippel navnefest wishlist again
 
 # Verify Gifts
 
-Audit the static catalog in `src/data/gifts.ts`. Do not edit gifts during an audit unless the user explicitly asks for fixes.
+Audit the static catalog in `src/data/gifts.ts` (navnefest) or `src/data/jul-gifts.ts` (jul). Do not edit gifts during an audit unless the user explicitly asks for fixes.
 
 ## Workflow
 
-1. Read `src/data/gifts.ts`, the `Gift` type, and `src/components/GiftFilters.tsx`. Read the relevant parts of `MVP.md` when checking tags, gift modes, or reservation behavior.
+1. Read `src/data/gifts.ts` (navnefest) or `src/data/jul-gifts.ts` (jul), the `Gift` type, and the list's `filters` in `src/data/wishlists.ts`. Read the relevant parts of `MVP.md` when checking tags, gift modes, or reservation behavior.
 2. Check every gift has a clear recipient: at least one of `Edvin`, `Jonas`, and `Sofie` in `tags`. Require `"Fellesgave"` for a shared gift. Flag gifts whose recipient is missing, unclear, or inconsistent with the title or description.
 3. Identify gifts likely to require a size, age, fit, or compatible model (such as clothing, shoes, helmets, skis, or accessories). Require the exact size or specification in the title or description. Flag a missing or vague requirement as needing user confirmation; never infer it from a child’s age or the catalog.
 4. Check each `id` is unique, lowercase, and hyphenated. Check all required `Gift` fields are populated, descriptions are concise Norwegian, and tags match the available filters.
@@ -21,4 +21,4 @@ Audit the static catalog in `src/data/gifts.ts`. Do not edit gifts during an aud
 
 ## Guardrails
 
-Keep gift definitions in `src/data/gifts.ts`; do not create database records or an admin editing flow. Do not guess a recipient, size, product URL, price, or image. Do not hotlink images.
+Keep gift definitions in `src/data/gifts.ts` (navnefest) or `src/data/jul-gifts.ts` (jul); do not create database records or an admin editing flow. Do not guess a recipient, size, product URL, price, or image. Do not hotlink images.
